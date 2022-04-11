@@ -36,34 +36,74 @@ struct vec3 {
     }
 
     vec3 operator-(const vec3 &b) const {
-        return vec3{.x=x - b.x, .y=y - b.y, .z=z - b.z};
-    }
-
-    // cross product
-    vec3 operator*(const vec3 &b) const {
-        return vec3{.x=y * b.z - z * b.y, .y=x * b.z - z * b.x, .z=x * b.y - y * b.x};
+        return *this + (-b);
     }
 
     bool operator==(const vec3 b) const {
         return eq(x, b.x) && eq(y, b.y) && eq(z, b.z);
     }
 
-    // dot product
-    int dot(const vec3 &b) const {
+    // dot product (aka inner product, or scalar product, producing a scalar)
+    T dot(const vec3 &b) const {
         return x * b.x + y * b.y + z * b.z;
     }
 
+    // cross product (aka outer product, or vector product, producing a vector)
+    vec3 cross(const vec3 &b) const {
+        return vec3{.x=y * b.z - z * b.y, .y=x * b.z - z * b.x, .z=x * b.y - y * b.x};
+    }
+
     // norm value
-    int norm(const int level = 2) const {
+    double norm(const int level = 2) const {
         if (level == 2) {
-            return std::abs(x * x + y * y + z * z);
+            return std::abs(sqrt(x * x + y * y + z * z));
         } else if (level == 1) {
-            return std::abs(x + y + z);
+            return std::abs(x) + std::abs(y) + std::abs(z);
         } else {
-            return (int) std::abs(powl(x, level) + powl(y, level) + powl(z, level));
+            return powl(powl(x, level) + powl(y, level) + powl(z, level), 1.0 / level);
         }
     }
+
+    vec3 unit_vec() const {
+        return *this * (1.0 / norm());
+    }
 };
+
+// print to ostream
+template<typename T>
+std::ostream &operator<<(std::ostream &out, const vec3<T> &vec) {
+    return out << "vec3[x=" << vec.x << ", y=" << vec.y << ", z=" << vec.z << ']';
+}
+
+// product vec3 by a scalar
+template<typename T, typename S>
+vec3<T> operator*(const vec3<T> &vec, const S &b) {
+    return vec3<T>{.x=(T) (vec.x * b), .y=(T) (vec.y * b), .z=(T) (vec.z * b)};
+}
+
+// product vec3 by a scalar
+template<typename T, typename S>
+vec3<T> operator*(const S &b, const vec3<T> &vec) {
+    return vec3<T>{.x=(T) (vec.x * b), .y=(T) (vec.y * b), .z=(T) (vec.z * b)};
+}
+
+// product vec3 by the inversion of a scalar (div by a scalar)
+template<typename T, typename S>
+vec3<T> operator/(const vec3<T> &vec, const S &b) {
+    return vec3<T>{.x=(T) (vec.x / b), .y=(T) (vec.y / b), .z=(T) (vec.z / b)};
+}
+
+// scalar product (inner product)
+template<typename T>
+T dot(const vec3<T> &a, const vec3<T> &b) {
+    return a.dot(b);
+}
+
+// vector product (outer product)
+template<typename T>
+vec3<T> cross(const vec3<T> &a, const vec3<T> &b) {
+    return a.cross(b);
+}
 
 // 3-dim vector (int)
 using vec3i = vec3<int>;
