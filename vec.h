@@ -27,7 +27,7 @@ struct vec3 {
     T y;
     T z;
 
-    vec3 operator+(vec3 &b) const {
+    vec3 operator+(const vec3 &b) const {
         return vec3{.x=x + b.x, .y=y + b.y, .z=z + b.z};
     }
 
@@ -35,26 +35,26 @@ struct vec3 {
         return vec3{.x = -x, .y = -y, .z = -z};
     }
 
-    vec3 operator-(vec3 &b) const {
+    vec3 operator-(const vec3 &b) const {
         return vec3{.x=x - b.x, .y=y - b.y, .z=z - b.z};
     }
 
     // cross product
-    vec3 operator*(vec3 &b) const {
+    vec3 operator*(const vec3 &b) const {
         return vec3{.x=y * b.z - z * b.y, .y=x * b.z - z * b.x, .z=x * b.y - y * b.x};
     }
 
-    bool operator==(vec3 b) const {
+    bool operator==(const vec3 b) const {
         return eq(x, b.x) && eq(y, b.y) && eq(z, b.z);
     }
 
     // dot product
-    int dot(vec3 &b) const {
+    int dot(const vec3 &b) const {
         return x * b.x + y * b.y + z * b.z;
     }
 
     // norm value
-    int norm(int level = 2) const {
+    int norm(const int level = 2) const {
         if (level == 2) {
             return std::abs(x * x + y * y + z * z);
         } else if (level == 1) {
