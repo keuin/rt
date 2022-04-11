@@ -2,6 +2,9 @@
 // Created by Keuin on 2022/4/11.
 //
 
+#ifndef RT_VEC_H
+#define RT_VEC_H
+
 #include <cmath>
 
 static inline bool eq(int a, int b) {
@@ -116,3 +119,5 @@ using vec3f = vec3<float>;
 
 // 3-dim vector (double)
 using vec3d = vec3<double>;
+
+#endif //RT_VEC_H
