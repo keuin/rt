@@ -8,6 +8,10 @@ static inline bool eq(int a, int b) {
     return a == b;
 }
 
+static inline bool eq(long long a, long long b) {
+    return a == b;
+}
+
 static inline bool eq(double a, double b) {
     // FIXME broken on large values
     // https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
