@@ -12,11 +12,12 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 # main executable
 
-add_executable(rt main.cpp vec.h)
+add_executable(rt main.cpp vec.h bitmap.h)
+add_executable(image_output main_image_output.cpp vec.h bitmap.h)
 
 # googletest
 
-add_executable(all_tests test.cpp)
+add_executable(all_tests test.cpp vec.h bitmap.h)
 
 target_link_libraries(all_tests gtest_main)
 include(FetchContent)
