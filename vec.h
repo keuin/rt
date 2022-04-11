@@ -30,6 +30,10 @@ struct vec3 {
     T y;
     T z;
 
+    static vec3 zero() {
+        return vec3{0, 0, 0};
+    }
+
     vec3 operator+(const vec3 &b) const {
         return vec3{.x=x + b.x, .y=y + b.y, .z=z + b.z};
     }
