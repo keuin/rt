@@ -10,12 +10,47 @@
 #include <ostream>
 #include <cassert>
 
+#define COLORMIX_OVERFLOW_CHECK
+
+//// T is some unsigned integer
+//template<typename T>
+//T saturate_add(T a, T b) {
+//    T c = a + b;
+//    if (a > c || b > c) {
+//        c = (1ULL << (sizeof(T) * 8U)) - 1ULL;
+//    }
+//    return c;
+//}
 
 // T is some unsigned integer, do not use float point types!
 template<typename T>
 struct pixel {
     T r, g, b;
+
+    /**
+     * Create a pixel with given depth, from normalized color values.
+     * For example: for 8bit pixel, with (1, 0.5, 0.25), we get: (255, 127, 63).
+     */
+    static pixel<T> from_normalized(double r, double g, double b) {
+        const auto mod = (1ULL << (sizeof(T) * 8U)) - 1ULL;
+        return pixel<T>{.r = (T) (mod * r), .g = (T) (mod * g), .b = (T) (mod * b)};
+    }
 };
+
+// Mix two colors a and b. Returns a*u + b*v
+template<typename T>
+inline pixel<T> mix(const pixel<T> &a, const pixel<T> &b, double u, double v) {
+    assert(u >= 0);
+    assert(v >= 0);
+    assert(u <= 1);
+    assert(v <= 1);
+    assert(u + v <= 1);
+    pixel<T> c{0, 0, 0};
+    c.r = (T) (u * a.r + v * b.r);
+    c.g = (T) (u * a.g + v * b.g);
+    c.b = (T) (u * a.b + v * b.b);
+    return c;
+}
 
 // 8 bit pixel
 using pixel8b = pixel<uint8_t>;
@@ -28,16 +63,18 @@ class bitmap {
     pixel<T> &image(unsigned x, unsigned y) {
         assert(x < width);
         assert(y < height);
-        return content[x * width + y];
+        return content[x + y * width];
     }
 
     pixel<T> &image(unsigned x, unsigned y) const {
         assert(x < width);
         assert(y < height);
-        return content[x * width + y];
+        return content[x + y * width];
     }
 
 public:
+    bitmap() = delete;
+
     bitmap(unsigned int width, unsigned int height) : width(width), height(height) {
         content.resize(width * height, pixel<T>{});
     }
