@@ -207,5 +207,5 @@ int main(int argc, char **argv) {
     generate_image(image_width, std::stoul(ih),
                    std::stod(vw), std::stod(fl),
                    std::stod(sz), std::stod(sr), cap,
-                   (int)(1.0 * image_width * 0.015 / 8));
+                   std::max((int)(1.0 * image_width * 0.015 / 8), 1));
 }
