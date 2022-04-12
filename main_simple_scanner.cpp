@@ -169,7 +169,7 @@ public:
 };
 
 void generate_image(uint16_t image_width, uint16_t image_height, double viewport_width, double focal_length,
-                    double sphere_z, double sphere_r) {
+                    double sphere_z, double sphere_r, const std::string &caption = "", unsigned caption_scale = 1) {
     double r = 1.0 * image_width / image_height;
     viewport vp{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}};
     vp.add_object(std::make_shared<sphere>(
@@ -178,8 +178,13 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     vp.add_object(std::make_shared<sphere>(vec3d{0, 0, sphere_z}, sphere_r));
     timer tm;
     tm.start_measure();
-    const auto image = vp.render(vec3d::zero(), image_width, image_height); // camera position as the coordinate origin
+    auto image = vp.render(vec3d::zero(), image_width, image_height); // camera position as the coordinate origin
     tm.stop_measure();
+    if (!caption.empty()) {
+        image.print(caption,
+                    pixel8b::from_normalized(1.0, 0.0, 0.0),
+                    10, 10, caption_scale, 0.8);
+    }
     if (!std::getenv("NOPRINT")) {
         image.write_plain_ppm(std::cout);
     } else {
@@ -188,13 +193,19 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
 }
 
 int main(int argc, char **argv) {
-    if (argc != 7) {
+    if (argc != 7 && argc != 8) {
         printf("Usage: %s <image_width> <image_height> <viewport_width> <focal_length> <sphere_z> <sphere_r>\n",
                argv[0]);
         return 0;
     }
-    std::string iw{argv[1]}, ih{argv[2]}, vw{argv[3]}, fl{argv[4]}, sz{argv[5]}, sr{argv[6]};
-    generate_image(std::stoul(iw), std::stoul(ih),
+    std::string iw{argv[1]}, ih{argv[2]}, vw{argv[3]}, fl{argv[4]}, sz{argv[5]}, sr{argv[6]}, cap{};
+    if (argc == 8) {
+        // with caption
+        cap = std::string{argv[7]};
+    }
+    const auto image_width = std::stoul(iw);
+    generate_image(image_width, std::stoul(ih),
                    std::stod(vw), std::stod(fl),
-                   std::stod(sz), std::stod(sr));
+                   std::stod(sz), std::stod(sr), cap,
+                   (int)(1.0 * image_width * 0.015 / 8));
 }
