@@ -28,8 +28,9 @@ struct pixel {
     T r, g, b;
 
     /**
-     * Create a pixel with given depth, from normalized color values.
-     * For example: for 8bit pixel, with (1, 0.5, 0.25), we get: (255, 127, 63).
+     * Create a pixel of given depth, from normalized color values.
+     * r, g, b must in range [0, 1].
+     * For example: Set color depth to 8bit, for normalized color (1, 0.5, 0.25), we get: (255, 127, 63).
      */
     static inline pixel<T> from_normalized(double r, double g, double b) {
         const auto mod = (1ULL << (sizeof(T) * 8U)) - 1ULL;
