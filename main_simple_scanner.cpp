@@ -52,18 +52,23 @@ public:
         // sphere hit formula: |Source + Direction * time - Center| = radius
         // |(Sx + Dx * t - Cx, Sy + Dy * t - Cy, Sz + Dz * t - Cz)| = radius
 
+        const auto c2s = r.source() - center; // center to source
         // A = D dot D
         const double a = dot(r.direction(), r.direction());
-        // B = 2(S - C) dot D
-        const double b = 2 * dot(r.source() - center, r.direction());
-        const auto rel_src = r.source() - center; // relative position of ray source
+        // H = (S - C) dot D
+        const auto h = dot(c2s, r.direction());
+        // B = 2H ( not used in our optimized routine )
         // C = (S - C) dot (S - C) - radius^2
-        const double c = dot(rel_src, rel_src) - radius * radius;
-        const auto delta = b * b - 4 * a * c;
-        const auto hit = delta >= 0;
+        const double c = dot(c2s, c2s) - radius * radius;
+        // 4delta = H^2 - AC
+        // delta_q = H^2 - AC (quarter delta)
+        const double delta_q = h * h - a * c;
+
+        const auto hit = delta_q >= 0;
         if (hit) {
             // the smaller root is the first point the ray hits, so return that one
-            t = (-b - sqrt(delta)) / (2.0 * a);
+            // t = ( -H +- sqrt{ delta_q } ) / A
+            t = (-h - sqrt(delta_q)) / a;
         }
         return hit;
     }
