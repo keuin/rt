@@ -17,14 +17,17 @@ public:
     ray3() = delete;
     ray3(const vec3<T> &source, const vec3<T> &direction) : source_(source), direction_(direction.unit_vec()) {}
 
+    // Get the source point from where the ray emits.
     vec3<T> source() const {
         return source_;
     }
 
+    // Get the unit vector along the ray's direction.
     vec3<T> direction() const {
         return direction_;
     }
 
+    // Compute the point this ray reaches at the time `t`.
     template<typename U>
     vec3<T> at(U t) const {
         return source_ + direction_ * t;
