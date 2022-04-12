@@ -78,37 +78,37 @@ struct vec3 {
 
 // print to ostream
 template<typename T>
-std::ostream &operator<<(std::ostream &out, const vec3<T> &vec) {
+inline std::ostream &operator<<(std::ostream &out, const vec3<T> &vec) {
     return out << "vec3[x=" << vec.x << ", y=" << vec.y << ", z=" << vec.z << ']';
 }
 
 // product vec3 by a scalar
 template<typename T, typename S>
-vec3<T> operator*(const vec3<T> &vec, const S &b) {
+inline vec3<T> operator*(const vec3<T> &vec, const S &b) {
     return vec3<T>{.x=(T) (vec.x * b), .y=(T) (vec.y * b), .z=(T) (vec.z * b)};
 }
 
 // product vec3 by a scalar
 template<typename T, typename S>
-vec3<T> operator*(const S &b, const vec3<T> &vec) {
+inline vec3<T> operator*(const S &b, const vec3<T> &vec) {
     return vec3<T>{.x=(T) (vec.x * b), .y=(T) (vec.y * b), .z=(T) (vec.z * b)};
 }
 
 // product vec3 by the inversion of a scalar (div by a scalar)
 template<typename T, typename S>
-vec3<T> operator/(const vec3<T> &vec, const S &b) {
+inline vec3<T> operator/(const vec3<T> &vec, const S &b) {
     return vec3<T>{.x=(T) (vec.x / b), .y=(T) (vec.y / b), .z=(T) (vec.z / b)};
 }
 
 // scalar product (inner product)
 template<typename T>
-T dot(const vec3<T> &a, const vec3<T> &b) {
+inline T dot(const vec3<T> &a, const vec3<T> &b) {
     return a.dot(b);
 }
 
 // vector product (outer product)
 template<typename T>
-vec3<T> cross(const vec3<T> &a, const vec3<T> &b) {
+inline vec3<T> cross(const vec3<T> &a, const vec3<T> &b) {
     return a.cross(b);
 }
 
