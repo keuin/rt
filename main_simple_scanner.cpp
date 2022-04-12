@@ -20,7 +20,7 @@ public:
     // Will the given ray hit. Returns time t if hits.
     virtual bool hit(const ray3d &r, double &t) const = 0;
 
-    // Given a point on the surface, returns the normalized normal vector on that point.
+    // Given a point on the surface, returns the normalized outer normal vector on that point.
     virtual vec3d normal_vector(const vec3d &where) const = 0;
 
     // object color, currently not parameterized
