@@ -103,8 +103,8 @@ public:
         for (int j = -img_hh; j < img_hh; ++j) { // axis y
             for (int i = -img_hw; i < img_hw; ++i) { // axis x
                 const vec3d off{
-                        .x=1.0 * i / half_width,
-                        .y=1.0 * j / half_height,
+                        .x=1.0 * i / img_hw * half_width,
+                        .y=1.0 * j / img_hh * half_height,
                         .z=0.0
                 }; // offset on screen plane
                 const auto dir = r + off; // direction vector from camera to current pixel on screen
