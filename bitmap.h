@@ -10,6 +10,8 @@
 #include <ostream>
 #include <cassert>
 
+#include "bitfont.h"
+
 #define COLORMIX_OVERFLOW_CHECK
 
 //// T is some unsigned integer
@@ -95,6 +97,10 @@ public:
 
     // Do not use float-point pixels, or this routine will break.
     void write_plain_ppm(std::ostream &out) const;
+
+    // Draw text on the image. Supports limited visual ASCII characters.
+    void print(const std::string &s, const pixel<T> &color,
+               unsigned x, unsigned y, unsigned scale = 1, double alpha = 1.0);
 };
 
 template<typename T>
@@ -108,6 +114,38 @@ void bitmap<T>::write_plain_ppm(std::ostream &out) const {
         out << (unsigned long long) pixel.r << ' '
             << (unsigned long long) pixel.g << ' '
             << (unsigned long long) pixel.b << '\n';
+    }
+}
+
+template<typename T>
+void bitmap<T>::print(const std::string &s, const pixel<T> &color,
+                      unsigned x, unsigned y, unsigned scale, double alpha) {
+    assert(alpha >= 0);
+    assert(alpha <= 1);
+    const unsigned char_w = 8 * scale, char_h = 13 * scale; // char width and height
+    size_t n = 0;
+    for (const auto &c: s) {
+        unsigned int idx = c - 32U;
+        if (idx >= 95) idx = 1; // replace invisible chars with '!'
+
+        const unsigned char_x = x + n * char_w + ((n > 1) ? ((n - 1) * scale) : 0);
+        const unsigned char_y = y;
+
+        // char size is 13x8, stored line by line, from the bottom line to the top line
+        // every line is represented in a single byte
+        // in every byte, from MSB to LSB, the pixel goes from left to right
+
+        for (unsigned i = 0; i < char_w; ++i) {
+            for (unsigned j = 0; j < char_h; ++j) {
+                // downscale (i, j) to pos on char bitmap i -> i/scale, j -> j/scale
+                if (rasters[idx][12 - j / scale] & (1U << (7U - i / scale))) {
+                    const auto pen_x = char_x + i, pen_y = char_y + j;
+                    if (pen_x >= width || pen_y >= height) continue;
+                    image(pen_x, pen_y) = mix(image(pen_x, pen_y), color, 1.0 - alpha, alpha);
+                }
+            }
+        }
+        ++n;
     }
 }
 
