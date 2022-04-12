@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+#include <limits>
 #include <memory>
 #include <cstdlib>
 
@@ -17,8 +18,13 @@
 
 class object {
 public:
-    // Will the given ray hit. Returns time t if hits.
-    virtual bool hit(const ray3d &r, double &t) const = 0;
+    // Will the given ray hit. Returns time t if hits in range [t1, t2].
+    virtual bool hit(const ray3d &r, double &t, double t1, double t2) const = 0;
+
+    // With t2 = infinity
+    inline bool hit(const ray3d &r, double &t, double t1) const {
+        return hit(r, t, t1, std::numeric_limits<double>::infinity());
+    }
 
     // Given a point on the surface, returns the normalized outer normal vector on that point.
     virtual vec3d normal_vector(const vec3d &where) const = 0;
@@ -46,7 +52,7 @@ public:
         return (where - center) / radius;
     }
 
-    bool hit(const ray3d &r, double &t) const override {
+    bool hit(const ray3d &r, double &t, double t1, double t2) const override {
         // Ray: {Source, Direction, time}
         // Sphere: {Center, radius}
         // sphere hit formula: |Source + Direction * time - Center| = radius
@@ -64,11 +70,22 @@ public:
         // delta_q = H^2 - AC (quarter delta)
         const double delta_q = h * h - a * c;
 
-        const auto hit = delta_q >= 0;
-        if (hit) {
-            // the smaller root is the first point the ray hits, so return that one
+        bool hit = false;
+        if (delta_q >= 0) {
+            // return the root in range [t1, t2]
             // t = ( -H +- sqrt{ delta_q } ) / A
-            t = (-h - sqrt(delta_q)) / a;
+            double root;
+            root = (-h - sqrt(delta_q)) / a;
+            if (root >= t1 && root <= t2) {
+                hit = true;
+                t = root;
+            } else {
+                root = (-h + sqrt(delta_q)) / a;
+                if (root >= t1 && root <= t2) {
+                    hit = true;
+                    t = root;
+                }
+            }
         }
         return hit;
     }
@@ -88,7 +105,7 @@ class viewport {
         // Detect hits
         double hit_t;
         for (const auto &obj: objects) {
-            if (obj->hit(r, hit_t)) {
+            if (obj->hit(r, hit_t, 0.0)) {
                 // normal vector on hit point
                 const auto nv = obj->normal_vector(r.at(hit_t));
 //                return obj->color();
