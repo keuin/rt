@@ -54,12 +54,12 @@ public:
 
         const auto c2s = r.source() - center; // center to source
         // A = D dot D
-        const double a = dot(r.direction(), r.direction());
+        const double a = r.direction().mod2();
         // H = (S - C) dot D
         const auto h = dot(c2s, r.direction());
         // B = 2H ( not used in our optimized routine )
         // C = (S - C) dot (S - C) - radius^2
-        const double c = dot(c2s, c2s) - radius * radius;
+        const double c = c2s.mod2() - radius * radius;
         // 4delta = H^2 - AC
         // delta_q = H^2 - AC (quarter delta)
         const double delta_q = h * h - a * c;
