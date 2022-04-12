@@ -95,13 +95,22 @@ public:
     }
 };
 
-class viewport {
-    double half_width, half_height; // viewport size
-    vec3d center; // coordinate of the viewport center point
-    std::vector<std::shared_ptr<object>> objects; // TODO move to world class
+// A world
+class hitlist {
+    std::vector<std::shared_ptr<object>> objects;
 
-    // Given a ray from the camera, generate a color the camera seen on the viewport.
-    pixel8b color(const ray3d &r) {
+public:
+    hitlist() = default;
+
+    hitlist(hitlist &other) = delete; // do not copy the world
+
+    // Add an object to the world.
+    void add_object(std::shared_ptr<object> &&obj) {
+        objects.push_back(std::move(obj));
+    }
+
+    // Given a ray, compute the color.
+    pixel8b color(const ray3d &r) const {
         // Detect hits
         bool hit = false;
         double hit_t = std::numeric_limits<double>::infinity();
@@ -134,19 +143,21 @@ class viewport {
         );
     }
 
+
+};
+
+class viewport {
+    double half_width, half_height; // viewport size
+    vec3d center; // coordinate of the viewport center point
+
 public:
     viewport() = delete;
 
     viewport(double width, double height, vec3d viewport_center) :
             half_width(width / 2.0), half_height(height / 2.0), center(viewport_center) {}
 
-    // Add an object to the world.
-    void add_object(std::shared_ptr<object> &&obj) {
-        objects.push_back(std::move(obj));
-    }
-
     // Generate the image seen on given viewpoint.
-    bitmap8b render(vec3d viewpoint, uint16_t image_width, uint16_t image_height) {
+    bitmap8b render(const hitlist &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) const {
         bitmap8b image{image_width, image_height};
         const auto r = center - viewpoint;
         const int img_hw = image_width / 2, img_hh = image_height / 2;
@@ -160,7 +171,7 @@ public:
                 }; // offset on screen plane
                 const auto dir = r + off; // direction vector from camera to current pixel on screen
                 const ray3d ray{viewpoint, dir}; // from camera to pixel (on the viewport)
-                const auto pixel = color(ray);
+                const auto pixel = world.color(ray);
                 image.set(i + img_hw, -j + img_hh, pixel);
             }
         }
@@ -172,13 +183,14 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
                     double sphere_z, double sphere_r, const std::string &caption = "", unsigned caption_scale = 1) {
     double r = 1.0 * image_width / image_height;
     viewport vp{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}};
-    vp.add_object(std::make_shared<sphere>(
+    hitlist world;
+    world.add_object(std::make_shared<sphere>(
             vec3d{0, -100.5, -1},
             100)); // the earth
-    vp.add_object(std::make_shared<sphere>(vec3d{0, 0, sphere_z}, sphere_r));
+    world.add_object(std::make_shared<sphere>(vec3d{0, 0, sphere_z}, sphere_r));
     timer tm;
     tm.start_measure();
-    auto image = vp.render(vec3d::zero(), image_width, image_height); // camera position as the coordinate origin
+    auto image = vp.render(world, vec3d::zero(), image_width, image_height); // camera position as the coordinate origin
     tm.stop_measure();
     if (!caption.empty()) {
         image.print(caption,
@@ -207,5 +219,5 @@ int main(int argc, char **argv) {
     generate_image(image_width, std::stoul(ih),
                    std::stod(vw), std::stod(fl),
                    std::stod(sz), std::stod(sr), cap,
-                   std::max((int)(1.0 * image_width * 0.015 / 8), 1));
+                   std::max((int) (1.0 * image_width * 0.015 / 8), 1));
 }
