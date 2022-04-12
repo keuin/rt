@@ -17,8 +17,11 @@
 
 class object {
 public:
-    // Will the given ray hit.
-    virtual bool hit(const ray3d &r) const = 0;
+    // Will the given ray hit. Returns time t if hits.
+    virtual bool hit(const ray3d &r, double &t) const = 0;
+
+    // Given a point on the surface, returns the normalized normal vector on that point.
+    virtual vec3d normal_vector(const vec3d &where) const = 0;
 
     // object color, currently not parameterized
     virtual pixel8b color() const = 0;
@@ -38,7 +41,12 @@ public:
 
     ~sphere() override = default;
 
-    bool hit(const ray3d &r) const override {
+    vec3d normal_vector(const vec3d &where) const override {
+        // We assume the point is on surface, speeding up the normalization
+        return (where - center) / radius;
+    }
+
+    bool hit(const ray3d &r, double &t) const override {
         // Ray: {Source, Direction, time}
         // Sphere: {Center, radius}
         // sphere hit formula: |Source + Direction * time - Center| = radius
@@ -51,7 +59,13 @@ public:
         const auto rel_src = r.source() - center; // relative position of ray source
         // C = (S - C) dot (S - C) - radius^2
         const double c = dot(rel_src, rel_src) - radius * radius;
-        return b * b - 4 * a * c >= 0;
+        const auto delta = b * b - 4 * a * c;
+        const auto hit = delta >= 0;
+        if (hit) {
+            // the smaller root is the first point the ray hits, so return that one
+            t = (-b - sqrt(delta)) / (2.0 * a);
+        }
+        return hit;
     }
 
     pixel8b color() const override {
@@ -67,9 +81,14 @@ class viewport {
     // Given a ray from the camera, generate a color the camera seen on the viewport.
     pixel8b color(const ray3d &r) {
         // Detect hits
+        double hit_t;
         for (const auto &obj: objects) {
-            if (obj->hit(r)) {
-                return obj->color();
+            if (obj->hit(r, hit_t)) {
+                // normal vector on hit point
+                const auto nv = obj->normal_vector(r.at(hit_t));
+//                return obj->color();
+                // visualize normal vector at hit point
+                return pixel8b::from_normalized(nv);
             }
         }
 

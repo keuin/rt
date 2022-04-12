@@ -31,9 +31,14 @@ struct pixel {
      * Create a pixel with given depth, from normalized color values.
      * For example: for 8bit pixel, with (1, 0.5, 0.25), we get: (255, 127, 63).
      */
-    static pixel<T> from_normalized(double r, double g, double b) {
+    static inline pixel<T> from_normalized(double r, double g, double b) {
         const auto mod = (1ULL << (sizeof(T) * 8U)) - 1ULL;
         return pixel<T>{.r = (T) (mod * r), .g = (T) (mod * g), .b = (T) (mod * b)};
+    }
+
+    // v3d must be a normalized vector
+    static inline pixel<T> from_normalized(const vec3d &v3d) {
+        return from_normalized(v3d.x / 2.0 + 0.5, v3d.y / 2.0 + 0.5, v3d.z / 2.0 + 0.5);
     }
 };
 
