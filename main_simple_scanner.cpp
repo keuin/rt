@@ -124,7 +124,7 @@ public:
         const auto r = center - viewpoint;
         const int img_hw = image_width / 2, img_hh = image_height / 2;
         // iterate over every pixel on the image
-        for (int j = -img_hh; j < img_hh; ++j) { // axis y
+        for (int j = -img_hh + 1; j <= img_hh; ++j) { // axis y, transformation is needed
             for (int i = -img_hw; i < img_hw; ++i) { // axis x
                 const vec3d off{
                         .x=1.0 * i / img_hw * half_width,
@@ -134,7 +134,7 @@ public:
                 const auto dir = r + off; // direction vector from camera to current pixel on screen
                 const ray3d ray{viewpoint, dir}; // from camera to pixel (on the viewport)
                 const auto pixel = color(ray);
-                image.set(i + img_hw, j + img_hh, pixel);
+                image.set(i + img_hw, -j + img_hh, pixel);
             }
         }
         return image;
