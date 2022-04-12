@@ -145,6 +145,9 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
                     double sphere_z, double sphere_r) {
     double r = 1.0 * image_width / image_height;
     viewport vp{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}};
+    vp.add_object(std::unique_ptr<object>{new sphere{
+            vec3d{0, -100.5, -1},
+            100}}); // the earth
     vp.add_object(std::unique_ptr<object>{new sphere{vec3d{0, 0, sphere_z}, sphere_r}});
     timer tm;
     tm.start_measure();
