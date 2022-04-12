@@ -68,3 +68,10 @@ TEST(Vec, UnitVec) {
     vec3d a{1, 2, 2}, b{1.0 / 3, 2.0 / 3, 2.0 / 3};
     ASSERT_EQ(a.unit_vec(), b);
 }
+
+TEST(Vec, Mod2) {
+    vec3i a{1, 2, 3};
+    vec3d b{2.5, 3, 1.2};
+    ASSERT_EQ(a.mod2(), 14);
+    ASSERT_LE(abs(b.mod2() - (2.5 * 2.5 + 3 * 3 + 1.2 * 1.2)), 1e-10);
+}

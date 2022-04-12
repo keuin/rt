@@ -71,6 +71,11 @@ struct vec3 {
         }
     }
 
+    // Squared module
+    T mod2() const {
+        return x * x + y * y + z * z;
+    }
+
     vec3 unit_vec() const {
         return *this * (1.0 / norm());
     }
