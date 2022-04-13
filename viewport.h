@@ -25,6 +25,8 @@ class bias_ctx {
     std::uniform_real_distribution<double> uni{0.0, 1.0};
 
 public:
+    bias_ctx() : enabled(false) {}
+
     bias_ctx(bool enabled, uint64_t seed = 0UL) : enabled(enabled), mt(std::mt19937_64{seed}) {}
 
     void operator()(double &bx, double &by) {
@@ -38,17 +40,32 @@ public:
     }
 };
 
+template<typename T>
 class viewport {
+public:
+    virtual bitmap<T> render(const hitlist &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) = 0;
+};
+
+using viewport8b = viewport<uint8_t>;
+
+// Single sampled viewport which supports bias sampling
+class basic_viewport : public viewport8b {
     const double half_width, half_height; // viewport size
     const vec3d center; // coordinate of the viewport center point
 
 public:
-    viewport() = delete;
+    basic_viewport() = delete;
 
-    viewport(double width, double height, vec3d viewport_center) :
+    basic_viewport(double width, double height, vec3d viewport_center) :
             half_width(width / 2.0), half_height(height / 2.0), center(viewport_center) {}
 
-    /**
+    virtual bitmap8b
+    render(const hitlist &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) override {
+        bias_ctx bc{};
+        return render(world, viewpoint, image_width, image_height, bc);
+    }
+
+    virtual /**
      * Generate the image seen on given viewpoint.
      * @param bx bias on x axis (0.0 <= bx < 1.0)
      * @param by bias on y axis (0.0 <= by < 1.0)

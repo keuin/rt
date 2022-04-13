@@ -19,7 +19,7 @@
 void generate_image(uint16_t image_width, uint16_t image_height, double viewport_width, double focal_length,
                     double sphere_z, double sphere_r, const std::string &caption = "", unsigned caption_scale = 1) {
     double r = 1.0 * image_width / image_height;
-    viewport vp{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}};
+    basic_viewport vp{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}};
     hitlist world;
     bias_ctx bias{false, 0};
     world.add_object(std::make_shared<sphere>(
