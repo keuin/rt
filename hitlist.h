@@ -19,7 +19,8 @@
 #include <cstdint>
 
 
-// A world
+// A world, T is color depth
+template<typename T>
 class hitlist {
     std::vector<std::shared_ptr<object>> objects;
 
@@ -34,7 +35,7 @@ public:
     }
 
     // Given a ray, compute the color.
-    pixel8b color(const ray3d &r) const {
+    pixel<T> color(const ray3d &r) const {
         // Detect hits
         bool hit = false;
         double hit_t = std::numeric_limits<double>::infinity();
@@ -53,15 +54,15 @@ public:
             const auto nv = hit_obj->normal_vector(r.at(hit_t));
 //                return obj->color();
             // visualize normal vector at hit point
-            return pixel8b::from_normalized(nv);
+            return pixel<T>::from_normalized(nv);
         }
 
 
         // Does not hit anything. Get background color (infinity)
         const auto u = (r.direction().y + 1.0) * 0.5;
         return mix(
-                pixel8b::from_normalized(1.0, 1.0, 1.0),
-                pixel8b::from_normalized(0.5, 0.7, 1.0),
+                pixel<T>::from_normalized(1.0, 1.0, 1.0),
+                pixel<T>::from_normalized(0.5, 0.7, 1.0),
                 1.0 - u,
                 u
         );
@@ -69,5 +70,7 @@ public:
 
 
 };
+
+using hitlist8b = hitlist<uint8_t>;
 
 #endif //RT_HITLIST_H

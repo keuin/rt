@@ -19,8 +19,8 @@
 void generate_image(uint16_t image_width, uint16_t image_height, double viewport_width, double focal_length,
                     double sphere_z, double sphere_r, const std::string &caption = "", unsigned caption_scale = 1) {
     double r = 1.0 * image_width / image_height;
-    basic_viewport vp{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}};
-    hitlist world;
+    basic_viewport8b vp{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}};
+    hitlist8b world;
     bias_ctx bias{false, 0};
     world.add_object(std::make_shared<sphere>(
             vec3d{0, -100.5, -1},
@@ -49,6 +49,9 @@ int main(int argc, char **argv) {
                argv[0]);
         return 0;
     }
+#ifndef NDEBUG
+    std::cerr << "Notice: assertion is enabled." << std::endl;
+#endif
     std::string iw{argv[1]}, ih{argv[2]}, vw{argv[3]}, fl{argv[4]}, sz{argv[5]}, sr{argv[6]}, cap{};
     if (argc == 8) {
         // with caption

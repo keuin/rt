@@ -43,13 +43,14 @@ public:
 template<typename T>
 class viewport {
 public:
-    virtual bitmap<T> render(const hitlist &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) = 0;
+    virtual bitmap<T> render(const hitlist<T> &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) = 0;
 };
 
 using viewport8b = viewport<uint8_t>;
 
 // Single sampled viewport which supports bias sampling
-class basic_viewport : public viewport8b {
+template<typename T>
+class basic_viewport : public viewport<T> {
     const double half_width, half_height; // viewport size
     const vec3d center; // coordinate of the viewport center point
 
@@ -59,22 +60,22 @@ public:
     basic_viewport(double width, double height, vec3d viewport_center) :
             half_width(width / 2.0), half_height(height / 2.0), center(viewport_center) {}
 
-    virtual bitmap8b
-    render(const hitlist &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) override {
+    virtual bitmap<T>
+    render(const hitlist<T> &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) override {
         bias_ctx bc{};
         return render(world, viewpoint, image_width, image_height, bc);
     }
 
-    virtual /**
+    /**
      * Generate the image seen on given viewpoint.
      * @param bx bias on x axis (0.0 <= bx < 1.0)
      * @param by bias on y axis (0.0 <= by < 1.0)
      * @return
      */
-    bitmap8b render(const hitlist &world, vec3d viewpoint,
-                    uint16_t image_width, uint16_t image_height,
-                    bias_ctx &bias) const {
-        bitmap8b image{image_width, image_height};
+    virtual bitmap<T> render(const hitlist<T> &world, vec3d viewpoint,
+                             uint16_t image_width, uint16_t image_height,
+                             bias_ctx &bias) const {
+        bitmap<T> image{image_width, image_height};
         double bx, by;
         const auto r = center - viewpoint;
         const int img_hw = image_width / 2, img_hh = image_height / 2;
@@ -100,5 +101,7 @@ public:
         return image;
     }
 };
+
+using basic_viewport8b = basic_viewport<uint8_t>;
 
 #endif //RT_VIEWPORT_H
