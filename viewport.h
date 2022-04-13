@@ -88,8 +88,8 @@ public:
                 assert(bx < 1.0);
                 assert(by < 1.0);
                 const vec3d off{
-                        .x=1.0 * i / img_hw * half_width + bx,
-                        .y=1.0 * j / img_hh * half_height + by,
+                        .x=(1.0 * i + bx) / img_hw * half_width,
+                        .y=(1.0 * j + by) / img_hh * half_height,
                         .z=0.0
                 }; // offset on screen plane
                 const auto dir = r + off; // direction vector from camera to current pixel on screen

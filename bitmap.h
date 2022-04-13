@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <ostream>
 #include <cassert>
+#include <vector>
 
 #include "bitfont.h"
 
@@ -85,6 +86,26 @@ public:
 
     bitmap(unsigned int width, unsigned int height) : width(width), height(height) {
         content.resize(width * height, pixel<T>{});
+    }
+
+    static bitmap<T> average(const std::vector<bitmap<T>> &images) {
+        assert(!images.empty());
+        bitmap<T> result{images[0].width, images[0].height};
+        const auto m = images.size();
+        const auto n = images[0].content.size();
+        uintmax_t acc_r, acc_g, acc_b;
+        for (size_t i = 0; i < n; ++i) {
+            acc_r = 0;
+            acc_g = 0;
+            acc_b = 0;
+            for (size_t j = 0; j < m; ++j) {
+                acc_r += images[j].content[i].r;
+                acc_g += images[j].content[i].g;
+                acc_b += images[j].content[i].b;
+            }
+            result.content[i] = pixel<T>{(T) (acc_r / m), (T) (acc_g / m), (T) (acc_b / m)};
+        }
+        return result;
     }
 
     void set(unsigned x, unsigned y, const pixel<T> &pixel) {
