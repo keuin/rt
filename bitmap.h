@@ -66,7 +66,7 @@ using pixel8b = pixel<uint8_t>;
 
 template<typename T>
 class bitmap {
-    const unsigned width, height;
+    unsigned width, height;
     std::vector<pixel<T>> content; // pixels scanned by rows, from top to bottom
 
     pixel<T> &image(unsigned x, unsigned y) {
