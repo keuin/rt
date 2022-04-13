@@ -44,6 +44,7 @@ template<typename T>
 class viewport {
 public:
     virtual bitmap<T> render(const hitlist<T> &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) = 0;
+    virtual ~viewport() = default;
 };
 
 using viewport8b = viewport<uint8_t>;

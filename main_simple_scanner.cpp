@@ -26,7 +26,12 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
         std::cerr << "Antialiasing Samples: " << samples << std::endl;
     }
     double r = 1.0 * image_width / image_height;
-    aa_viewport8b vp{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}, samples};
+    viewport8b *vp;
+    if (samples == 1) {
+        vp = new basic_viewport8b{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}};
+    } else {
+        vp = new aa_viewport8b{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}, samples};
+    }
     hitlist8b world;
     world.add_object(std::make_shared<sphere>(
             vec3d{0, -100.5, -1},
@@ -34,8 +39,8 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     world.add_object(std::make_shared<sphere>(vec3d{0, 0, sphere_z}, sphere_r));
     timer tm;
     tm.start_measure();
-    auto image = vp.render(world, vec3d::zero(),
-                           image_width, image_height); // camera position as the coordinate origin
+    auto image = vp->render(world, vec3d::zero(),
+                            image_width, image_height); // camera position as the coordinate origin
     tm.stop_measure();
     if (!caption.empty()) {
         image.print(caption,
@@ -47,6 +52,7 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     } else {
         std::cerr << "NOPRINT is defined. PPM Image won't be printed." << std::endl;
     }
+    delete vp;
 }
 
 int main(int argc, char **argv) {
