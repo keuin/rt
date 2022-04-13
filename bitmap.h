@@ -44,7 +44,29 @@ struct pixel {
     static inline pixel<T> from_normalized(const vec3d &v3d) {
         return from_normalized(v3d.x / 2.0 + 0.5, v3d.y / 2.0 + 0.5, v3d.z / 2.0 + 0.5);
     }
+
+    static inline pixel<T> black() {
+        return pixel<T>{(T) 0, (T) 0, (T) 0};
+    }
 };
+
+template<
+        typename T,
+        typename S,
+        typename = typename std::enable_if<std::is_arithmetic<S>::value, S>::type
+>
+pixel<T> operator*(const pixel<T> &pixel, S scale) {
+    return ::pixel < T > {.r=(T) (pixel.r * scale), .g=(T) (pixel.g * scale), .b=(T) (pixel.b * scale)};
+}
+
+template<
+        typename T,
+        typename S,
+        typename = typename std::enable_if<std::is_arithmetic<S>::value, S>::type
+>
+pixel<T> operator*(S scale, const pixel <T> &pixel) {
+    return ::pixel < T > {.r=(T) (pixel.r * scale), .g=(T) (pixel.g * scale), .b=(T) (pixel.b * scale)};
+}
 
 // Mix two colors a and b. Returns a*u + b*v
 template<typename T>
@@ -93,7 +115,7 @@ public:
         bitmap<T> result{images[0].width, images[0].height};
         const auto m = images.size();
         const auto n = images[0].content.size();
-        uintmax_t acc_r, acc_g, acc_b;
+        uint_fast32_t acc_r, acc_g, acc_b;
         for (size_t i = 0; i < n; ++i) {
             acc_r = 0;
             acc_g = 0;
@@ -103,7 +125,7 @@ public:
                 acc_g += images[j].content[i].g;
                 acc_b += images[j].content[i].b;
             }
-            result.content[i] = pixel<T>{(T) (acc_r / m), (T) (acc_g / m), (T) (acc_b / m)};
+            result.content[i] = pixel<T>{(T) (1.0 * acc_r / m), (T) (1.0 * acc_g / m), (T) (1.0 * acc_b / m)};
         }
         return result;
     }

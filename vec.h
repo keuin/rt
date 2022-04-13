@@ -6,6 +6,7 @@
 #define RT_VEC_H
 
 #include <cmath>
+#include <random>
 
 static inline bool eq(int a, int b) {
     return a == b;
@@ -88,19 +89,31 @@ inline std::ostream &operator<<(std::ostream &out, const vec3<T> &vec) {
 }
 
 // product vec3 by a scalar
-template<typename T, typename S>
+template<
+        typename T,
+        typename S,
+        typename = typename std::enable_if<std::is_arithmetic<S>::value, S>::type
+>
 inline vec3<T> operator*(const vec3<T> &vec, const S &b) {
     return vec3<T>{.x=(T) (vec.x * b), .y=(T) (vec.y * b), .z=(T) (vec.z * b)};
 }
 
 // product vec3 by a scalar
-template<typename T, typename S>
+template<
+        typename T,
+        typename S,
+        typename = typename std::enable_if<std::is_arithmetic<S>::value, S>::type
+>
 inline vec3<T> operator*(const S &b, const vec3<T> &vec) {
     return vec3<T>{.x=(T) (vec.x * b), .y=(T) (vec.y * b), .z=(T) (vec.z * b)};
 }
 
 // product vec3 by the inversion of a scalar (div by a scalar)
-template<typename T, typename S>
+template<
+        typename T,
+        typename S,
+        typename = typename std::enable_if<std::is_arithmetic<S>::value, S>::type
+>
 inline vec3<T> operator/(const vec3<T> &vec, const S &b) {
     return vec3<T>{.x=(T) (vec.x / b), .y=(T) (vec.y / b), .z=(T) (vec.z / b)};
 }
@@ -128,5 +141,25 @@ using vec3f = vec3<float>;
 
 // 3-dim vector (double)
 using vec3d = vec3<double>;
+
+// random unit vector generator
+template<typename T>
+class random_uv_gen {
+    std::mt19937_64 mt;
+    std::uniform_real_distribution<T> uni{-1.0, 1.0};
+
+public:
+    explicit random_uv_gen(uint64_t seed) : mt{seed} {}
+
+    vec3<T> operator()() {
+        while (true) {
+            const auto x = uni(mt), y = uni(mt), z = uni(mt);
+            const auto vec = vec3<T>{.x=x, .y=y, .z=z};
+            if (vec.mod2() <= 1.0) return vec;
+        }
+    }
+};
+
+using random_uv_gen_3d = random_uv_gen<double>;
 
 #endif //RT_VEC_H

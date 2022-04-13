@@ -44,13 +44,14 @@ public:
             remaining -= n;
             for (unsigned i = 0; i < n; ++i) {
                 workers.emplace_back(std::thread{
-                        [&](int tid, uint64_t seed, std::vector<basic_viewport<T>> *subs, vec3d viewpoint,
+                        [&](int tid, uint64_t seed, uint64_t diffuse_seed, std::vector<basic_viewport<T>> *subs, vec3d viewpoint,
                             uint16_t image_width, uint16_t image_height) {
                             bias_ctx bc{seed};
-                            auto image = (*subs)[tid].render(world, viewpoint, image_width, image_height, bc);
+                            auto image = (*subs)[tid].render(
+                                    world, viewpoint, image_width, image_height, bc, diffuse_seed);
                             images[base + tid] = image;
                         },
-                        i, seedgen(), subviews, viewpoint, image_width, image_height
+                        i, seedgen(), seedgen(), subviews, viewpoint, image_width, image_height
                 });
             }
             for (auto &th: workers) {
