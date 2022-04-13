@@ -27,7 +27,7 @@ class bias_ctx {
 public:
     bias_ctx() : enabled(false) {}
 
-    bias_ctx(bool enabled, uint64_t seed = 0UL) : enabled(enabled), mt(std::mt19937_64{seed}) {}
+    bias_ctx(uint64_t seed) : enabled(true), mt(std::mt19937_64{seed}) {}
 
     void operator()(double &bx, double &by) {
         if (enabled) {

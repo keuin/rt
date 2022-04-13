@@ -21,7 +21,7 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     double r = 1.0 * image_width / image_height;
     basic_viewport8b vp{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}};
     hitlist8b world;
-    bias_ctx bias{false, 0};
+    bias_ctx bias{};
     world.add_object(std::make_shared<sphere>(
             vec3d{0, -100.5, -1},
             100)); // the earth
