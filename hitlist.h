@@ -22,6 +22,11 @@
 //#define T_NORM_VISUAL
 #define T_DIFFUSE
 
+// Select which diffuse method to use
+//#define DIFFUSE_SIMPLE // Diffuse with a random vector whose length is in [0, 1]
+#define DIFFUSE_LR     // Diffuse with (possibly wrong) Lambertian Reflection, i.e. using a random unit vector
+//#define DIFFUSE_HEMI   // Diffuse with hemispherical scattering, i.e. using a normalized random vector within the hemisphere
+
 // A world, T is color depth
 template<typename T>
 class hitlist {
@@ -76,7 +81,15 @@ public:
                 const auto hit_point = r.at(hit_t); // hit point, on the surface
                 auto nv = hit_obj->normal_vector(hit_point);
                 if (dot(nv, r.direction()) > 0) return pixel<T>::black(); // discard rays from inner (or invert nv)
-                vec3d diffuse_target = hit_point + nv + ruvg();
+#ifdef DIFFUSE_SIMPLE
+                vec3d diffuse_target = hit_point + nv + ruvg.range01();
+#endif
+#ifdef DIFFUSE_LR
+                vec3d diffuse_target = hit_point + nv + ruvg.normalized();
+#endif
+#ifdef DIFFUSE_HEMI
+                vec3d diffuse_target = hit_point + ruvg.hemisphere(nv);
+#endif
                 decay *= 0.5; // lose 50% light when diffused
                 r = ray3d{hit_point, diffuse_target - hit_point}; // the new diffused ray we trace on
                 continue;

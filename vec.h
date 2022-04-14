@@ -144,23 +144,38 @@ using vec3d = vec3<double>;
 
 // random unit vector generator
 template<typename T>
-class random_uv_gen {
+class rand_vec_gen {
     std::mt19937_64 mt;
     std::uniform_real_distribution<T> uni{-1.0, 1.0};
 
 public:
-    random_uv_gen() = delete;
-    explicit random_uv_gen(uint64_t seed) : mt{seed} {}
+    rand_vec_gen() = delete;
 
-    vec3<T> operator()() {
+    explicit rand_vec_gen(uint64_t seed) : mt{seed} {}
+
+    // Get a random vector whose length is in [0, 1]
+    inline vec3<T> range01() {
         while (true) {
             const auto x = uni(mt), y = uni(mt), z = uni(mt);
             const auto vec = vec3<T>{.x=x, .y=y, .z=z};
-            if (vec.mod2() <= 1.0) return vec;
+            if (vec.mod2() <= 1.0) return vec.unit_vec();
         }
+    }
+
+    // Get a unit vector with random direction.
+    inline vec3<T> normalized() {
+        return range01().unit_vec();
+    }
+
+    // Get a random vector whose length is in [0, 1] and
+    // has a direction difference less than 90 degree with given vector.
+    inline vec3<T> hemisphere(vec3<T> &vec) {
+        const auto v = range01();
+        if (dot(v, vec) > 0) return v;
+        return -v;
     }
 };
 
-using random_uv_gen_3d = random_uv_gen<double>;
+using random_uv_gen_3d = rand_vec_gen<double>;
 
 #endif //RT_VEC_H
