@@ -72,14 +72,33 @@ struct pixel {
         return mod; // FIXME
     }
 
-    inline pixel<T> gamma2() const {
+    pixel<T> gamma2() const {
         const auto max = max_value();
-        const double r_ = sqrt(1.0 * this->r / max);
-        const double g_ = sqrt(1.0 * this->g / max);
-        const double b_ = sqrt(1.0 * this->b / max);
-        return pixel<T>::from_normalized(r_, g_, b_);
+        if (sizeof(T) <= 2) {
+            // 26% faster than using double
+            const auto r_ = sqrtf((float) (this->r) / (float) max);
+            const auto g_ = sqrtf((float) (this->g) / (float) max);
+            const auto b_ = sqrtf((float) (this->b) / (float) max);
+            return pixel<T>::from_normalized(r_, g_, b_);
+        } else {
+            const auto r_ = sqrt(1.0 * this->r / max);
+            const auto g_ = sqrt(1.0 * this->g / max);
+            const auto b_ = sqrt(1.0 * this->b / max);
+            return pixel<T>::from_normalized(r_, g_, b_);
+        }
     }
+
 };
+
+//template<>
+//pixel<uint16_t> pixel<uint16_t>::gamma2() const {
+//    // 26% faster than using double
+//    const auto max = max_value();
+//    const auto r_ = sqrtf((float) (this->r) / (float) (max));
+//    const auto g_ = sqrtf((float) (this->g) / (float) (max));
+//    const auto b_ = sqrtf((float) (this->b) / (float) (max));
+//    return pixel<uint16_t>::from_normalized(r_, g_, b_);
+//}
 
 template<
         typename T,
