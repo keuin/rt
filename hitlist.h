@@ -44,7 +44,7 @@ public:
 
     // Given a ray, compute the color.
     pixel<T> color(ray3d r, random_uv_gen_3d &ruvg, uint_fast32_t max_recursion_depth = 64) const {
-        double decay = 1;
+        assert(r.decay() == 1.0);
         while (max_recursion_depth-- > 0) {
             // Detect hits
             bool hit = false;
@@ -90,8 +90,8 @@ public:
 #ifdef DIFFUSE_HEMI
                 vec3d diffuse_target = hit_point + ruvg.hemisphere(nv);
 #endif
-                decay *= 0.5; // lose 50% light when diffused
-                r = ray3d{hit_point, diffuse_target - hit_point}; // the new diffused ray we trace on
+                r.decay(0.5); // lose 50% light when diffused
+                r.source(hit_point); r.direction((diffuse_target - hit_point).unit_vec()); // the new diffused ray we trace on
                 continue;
 #endif
             }
@@ -105,7 +105,7 @@ public:
                     u
             );
 #ifdef T_DIFFUSE
-            return decay * c;
+            return r.hit(c);
 #else
             return c;
 #endif
