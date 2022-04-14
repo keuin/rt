@@ -53,7 +53,7 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     if (!caption.empty()) {
         image.print(caption,
                     pixel<T>::from_normalized(1.0, 0.0, 0.0),
-                    10, 10, caption_scale, 0.8);
+                    10, 10, text_policy::newline, caption_scale, 0.8);
     }
     const auto image8b = bitmap8b::from<T>(image);
     if (!std::getenv("NOPRINT")) {
@@ -81,8 +81,8 @@ int main(int argc, char **argv) {
     }
     const auto image_width = std::stoul(iw);
     generate_image<uint16_t>(image_width, std::stoul(ih),
-                   std::stod(vw), std::stod(fl),
-                   std::stod(sz), std::stod(sr),
-                   std::stoul(sp), cap,
-                   std::max((int) (1.0 * image_width * 0.015 / 8), 1));
+                             std::stod(vw), std::stod(fl),
+                             std::stod(sz), std::stod(sr),
+                             std::stoul(sp), cap,
+                             std::max((int) (1.0 * image_width * 0.015 / 8), 1));
 }

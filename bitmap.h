@@ -16,6 +16,11 @@
 
 #define COLORMIX_OVERFLOW_CHECK
 
+enum text_policy {
+    hard = 0, // cut off overflown parts
+    newline = 1, // write overflown characters to new line
+};
+
 //// T is some unsigned integer
 //template<typename T>
 //T saturate_add(T a, T b) {
@@ -219,7 +224,7 @@ public:
 
     // Draw text on the image. Supports limited visual ASCII characters.
     void print(const std::string &s, const pixel<T> &color,
-               unsigned x, unsigned y, unsigned scale = 1, double alpha = 1.0);
+               unsigned x, unsigned y, text_policy policy, unsigned scale = 1, double alpha = 1.0);
 
     bool normalized() const {
         return false;
@@ -269,17 +274,28 @@ void bitmap<T>::write_plain_ppm(std::ostream &out) const {
 
 template<typename T>
 void bitmap<T>::print(const std::string &s, const pixel<T> &color,
-                      unsigned x, unsigned y, unsigned scale, double alpha) {
+                      unsigned x, unsigned y, text_policy policy, unsigned scale, double alpha) {
     assert(alpha >= 0);
     assert(alpha <= 1);
     const unsigned char_w = 8 * scale, char_h = 13 * scale; // char width and height
-    size_t n = 0;
+    size_t n = 0; // written characters
     for (const auto &c: s) {
         unsigned int idx = c - 32U;
         if (idx >= 95) idx = 1; // replace invisible chars with '!'
 
-        const unsigned char_x = x + n * char_w + ((n > 1) ? ((n - 1) * scale) : 0);
-        const unsigned char_y = y;
+        unsigned char_x, char_y;
+        const unsigned spacing = ((n > 1) ? ((n - 1) * scale) : 0); // total spacing between characters
+        if (policy == text_policy::hard) {
+            char_x = x + n * char_w + spacing;
+            char_y = y;
+        } else if (policy == text_policy::newline) {
+            const auto newlines = (n * char_w + spacing + char_w - 1) / (width - x);
+            char_x = (x + n * char_w + spacing) % (width - x);
+            char_y = y + newlines * char_h + ((newlines > 0) ? ((newlines - 1) * scale) : 0);
+        } else {
+            abort(); // unknown policy
+        }
+
 
         // char size is 13x8, stored line by line, from the bottom line to the top line
         // every line is represented in a single byte
