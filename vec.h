@@ -149,6 +149,7 @@ class random_uv_gen {
     std::uniform_real_distribution<T> uni{-1.0, 1.0};
 
 public:
+    random_uv_gen() = delete;
     explicit random_uv_gen(uint64_t seed) : mt{seed} {}
 
     vec3<T> operator()() {
