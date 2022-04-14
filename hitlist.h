@@ -48,7 +48,14 @@ public:
             // Check the nearest object we hit
             for (const auto &obj: objects) {
                 double t_;
-                if (obj->hit(r, t_, 0.0) && t_ < hit_t) {
+                // Fix the Shadow Acne problem
+                // Some diffused rays starts off from a point on the surface,
+                // while hit the surface very quickly at some small t like +-1e-10 or so.
+                // This decays the ray by accident, causing black pixels on the output image.
+                // We simply drop hits very near the surface
+                // (i.e. t is a very small positive number) to solve this problem.
+                static constexpr double t_min = 1e-8;
+                if (obj->hit(r, t_, t_min) && t_ < hit_t) {
                     hit = true;
                     hit_t = t_;
                     hit_obj = obj;
