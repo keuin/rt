@@ -43,7 +43,7 @@ public:
 template<typename T>
 class viewport {
 public:
-    virtual bitmap<T> render(const hitlist<T> &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) = 0;
+    virtual bitmap<T> render(const hitlist &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) = 0;
 
     virtual ~viewport() = default;
 };
@@ -61,7 +61,7 @@ public:
             half_width(width / 2.0), half_height(height / 2.0), center(viewport_center) {}
 
     virtual bitmap<T>
-    render(const hitlist<T> &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) override {
+    render(const hitlist &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) override {
         bias_ctx bc{};
         static constexpr uint64_t default_diffuse_seed = 123456789012345678ULL;
         return render(world, viewpoint, image_width, image_height, bc, default_diffuse_seed);
@@ -73,7 +73,7 @@ public:
      * @param by bias on y axis (0.0 <= by < 1.0)
      * @return
      */
-    virtual bitmap<T> render(const hitlist<T> &world, vec3d viewpoint,
+    virtual bitmap<T> render(const hitlist &world, vec3d viewpoint,
                              uint16_t image_width, uint16_t image_height,
                              bias_ctx &bias, uint64_t diffuse_seed) const {
         bitmap<T> image{image_width, image_height};
@@ -96,7 +96,7 @@ public:
                 }; // offset on screen plane
                 const auto dir = r + off; // direction vector from camera to current pixel on screen
                 ray3d ray{viewpoint, dir}; // from camera to pixel (on the viewport)
-                const auto pixel = world.color(ray, ruvg);
+                const auto pixel = world.color<T>(ray, ruvg);
                 image.set(i + img_hw, -j + img_hh, pixel);
             }
         }

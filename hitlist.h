@@ -28,7 +28,6 @@
 //#define DIFFUSE_HEMI   // Diffuse with hemispherical scattering, i.e. using a normalized random vector within the hemisphere
 
 // A world, T is color depth
-template<typename T>
 class hitlist {
     std::vector<std::shared_ptr<object>> objects;
 
@@ -43,6 +42,7 @@ public:
     }
 
     // Given a ray, compute the color.
+    template<typename T>
     pixel<T> color(ray3d r, random_uv_gen_3d &ruvg, uint_fast32_t max_recursion_depth = 64) const {
         assert(r.decay() == 1.0);
         while (max_recursion_depth-- > 0) {
@@ -113,7 +113,5 @@ public:
         return pixel<T>::black(); // reached recursion time limit, very little light
     }
 };
-
-using hitlist8b = hitlist<uint8_t>;
 
 #endif //RT_HITLIST_H

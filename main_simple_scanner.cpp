@@ -35,7 +35,7 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     } else {
         vp = new aa_viewport<T>{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}, samples};
     }
-    hitlist<T> world;
+    hitlist world;
     world.add_object(std::make_shared<sphere>(
             vec3d{0, -100.5, -1},
             100)); // the earth

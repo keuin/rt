@@ -27,7 +27,7 @@ public:
         delete subviews;
     }
 
-    virtual bitmap<T> render(const hitlist<T> &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) {
+    virtual bitmap<T> render(const hitlist &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) {
         const unsigned hwcc = std::thread::hardware_concurrency();
         std::cerr << "Rendering with " << hwcc << " thread(s)." << std::endl;
 
