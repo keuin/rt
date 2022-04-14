@@ -48,8 +48,6 @@ public:
     virtual ~viewport() = default;
 };
 
-using viewport8b = viewport<uint8_t>;
-
 // Single sampled viewport which supports bias sampling
 template<typename T>
 class basic_viewport : public viewport<T> {
@@ -105,7 +103,5 @@ public:
         return image;
     }
 };
-
-using basic_viewport8b = basic_viewport<uint8_t>;
 
 #endif //RT_VIEWPORT_H
