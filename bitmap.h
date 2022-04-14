@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "bitfont.h"
+#include "vec.h"
 
 #define COLORMIX_OVERFLOW_CHECK
 
@@ -29,6 +30,11 @@
 template<typename T>
 struct pixel {
     T r, g, b;
+    static constexpr auto mod = (1ULL << (sizeof(T) * 8U)) - 1ULL; // FIXME
+
+    bool operator==(const pixel<T> &other) const {
+        return r == other.r && g == other.g && b == other.b;
+    }
 
     /**
      * Create a pixel of given depth, from normalized color values.
@@ -36,7 +42,6 @@ struct pixel {
      * For example: Set color depth to 8bit, for normalized color (1, 0.5, 0.25), we get: (255, 127, 63).
      */
     static inline pixel<T> from_normalized(double r, double g, double b) {
-        const auto mod = (1ULL << (sizeof(T) * 8U)) - 1ULL;
         return pixel<T>{.r = (T) (mod * r), .g = (T) (mod * g), .b = (T) (mod * b)};
     }
 
@@ -45,8 +50,26 @@ struct pixel {
         return from_normalized(v3d.x / 2.0 + 0.5, v3d.y / 2.0 + 0.5, v3d.z / 2.0 + 0.5);
     }
 
+    // Convert pixels between different color depths.
+    template<typename U>
+    static inline pixel<T> from(const pixel<U> &orig) {
+        return from_normalized(
+                1.0 * orig.r / pixel<U>::max_value(),
+                1.0 * orig.g / pixel<U>::max_value(),
+                1.0 * orig.b / pixel<U>::max_value()
+        );
+    }
+
     static inline pixel<T> black() {
         return pixel<T>{(T) 0, (T) 0, (T) 0};
+    }
+
+    static inline pixel<T> white() {
+        return pixel<T>{(T) mod, (T) mod, (T) mod}; // FIXME float-point values
+    }
+
+    static inline T max_value() {
+        return mod; // FIXME
     }
 };
 
@@ -106,9 +129,11 @@ class bitmap {
 public:
     bitmap() = delete;
 
-    bitmap(unsigned int width, unsigned int height) : width(width), height(height) {
-        content.resize(width * height, pixel<T>{});
-    }
+    bitmap(unsigned int width, unsigned int height) :
+            width(width), height(height), content{width * height, pixel<T>{}} {}
+
+    bitmap(unsigned int width, unsigned int height, std::vector<pixel<T>> &&data) :
+            width(width), height(height), content{data} {}
 
     static bitmap<T> average(const std::vector<bitmap<T>> &images) {
         assert(!images.empty());
@@ -138,12 +163,45 @@ public:
         return image(x, y);
     }
 
+    const pixel<T> &operator[](size_t loc) const {
+        assert(loc < width * height);
+        return content[loc];
+    }
+
+    pixel<T> &operator[](size_t loc) {
+        assert(loc < width * height);
+        return content[loc];
+    }
+
     // Do not use float-point pixels, or this routine will break.
     void write_plain_ppm(std::ostream &out) const;
 
     // Draw text on the image. Supports limited visual ASCII characters.
     void print(const std::string &s, const pixel<T> &color,
                unsigned x, unsigned y, unsigned scale = 1, double alpha = 1.0);
+
+    bool normalized() const {
+        return false;
+        // TODO return true for float-point pixels
+    }
+
+    std::pair<unsigned, unsigned> shape() const {
+        return std::pair<unsigned, unsigned>{width, height};
+    }
+
+    // U: original color depth, T: desired color depth
+    template<typename U>
+    static bitmap<T> from(const bitmap<U> &src) {
+        const auto shape = src.shape();
+        const size_t sz = shape.first * shape.second;
+        bitmap<T> out{shape.first, shape.second};
+        for (size_t i = 0; i < sz; ++i) {
+            out[i] = pixel<T>::from(src[i]);
+            std::cerr << (int) out[i].r << ' ' << (int) out[i].g << ' ' << (int) out[i].b << std::endl;
+        }
+        return out;
+    }
+
 };
 
 template<typename T>

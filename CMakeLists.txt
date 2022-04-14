@@ -18,7 +18,7 @@ add_executable(simple_scanner main_simple_scanner.cpp vec.h bitmap.h ray.h timer
 
 # googletest
 
-add_executable(all_tests test.cpp vec.h bitmap.h ray.h)
+add_executable(all_tests test_vec.cpp test_bitmap.cpp vec.h bitmap.h ray.h)
 
 target_link_libraries(all_tests gtest_main)
 include(FetchContent)
