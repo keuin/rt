@@ -17,6 +17,8 @@
 
 #define DEMO_BALL
 
+// T: intermediate color depth
+template<typename T>
 void generate_image(uint16_t image_width, uint16_t image_height, double viewport_width, double focal_length,
                     double sphere_z, double sphere_r, unsigned samples, const std::string &caption = "",
                     unsigned caption_scale = 1) {
@@ -26,13 +28,13 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
         std::cerr << "Antialiasing Samples: " << samples << std::endl;
     }
     double r = 1.0 * image_width / image_height;
-    viewport8b *vp;
+    viewport<T> *vp;
     if (samples == 1) {
-        vp = new basic_viewport8b{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}};
+        vp = new basic_viewport<T>{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}};
     } else {
-        vp = new aa_viewport8b{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}, samples};
+        vp = new aa_viewport<T>{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}, samples};
     }
-    hitlist8b world;
+    hitlist<T> world;
     world.add_object(std::make_shared<sphere>(
             vec3d{0, -100.5, -1},
             100)); // the earth
@@ -44,11 +46,12 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     tm.stop_measure();
     if (!caption.empty()) {
         image.print(caption,
-                    pixel8b::from_normalized(1.0, 0.0, 0.0),
+                    pixel<T>::from_normalized(1.0, 0.0, 0.0),
                     10, 10, caption_scale, 0.8);
     }
+    const auto image8b = bitmap8b::from<T>(image);
     if (!std::getenv("NOPRINT")) {
-        image.write_plain_ppm(std::cout);
+        image8b.write_plain_ppm(std::cout);
     } else {
         std::cerr << "NOPRINT is defined. PPM Image won't be printed." << std::endl;
     }
@@ -71,7 +74,7 @@ int main(int argc, char **argv) {
         cap = std::string{argv[8]};
     }
     const auto image_width = std::stoul(iw);
-    generate_image(image_width, std::stoul(ih),
+    generate_image<uint16_t>(image_width, std::stoul(ih),
                    std::stod(vw), std::stod(fl),
                    std::stod(sz), std::stod(sr),
                    std::stoul(sp), cap,

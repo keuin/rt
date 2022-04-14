@@ -136,11 +136,25 @@ public:
             width(width), height(height), content{data} {}
 
     static bitmap<T> average(const std::vector<bitmap<T>> &images) {
+        using Acc = typename std::conditional<
+                (sizeof(T) <= 1),
+                uint_fast16_t,
+                typename std::conditional<
+                        (sizeof(T) <= 2),
+                        uint_fast32_t,
+                        typename std::conditional<
+                                (sizeof(T) <= 4),
+                                uint_fast64_t,
+                                uintmax_t
+                        >::type
+                >::type
+        >::type; // pick the smallest suitable type for accumulator
+        static_assert(sizeof(Acc) > sizeof(T), "accumulator may overflow");
         assert(!images.empty());
         bitmap<T> result{images[0].width, images[0].height};
         const auto m = images.size();
         const auto n = images[0].content.size();
-        uint_fast32_t acc_r, acc_g, acc_b;
+        Acc acc_r, acc_g, acc_b;
         for (size_t i = 0; i < n; ++i) {
             acc_r = 0;
             acc_g = 0;
@@ -197,7 +211,6 @@ public:
         bitmap<T> out{shape.first, shape.second};
         for (size_t i = 0; i < sz; ++i) {
             out[i] = pixel<T>::from(src[i]);
-            std::cerr << (int) out[i].r << ' ' << (int) out[i].g << ' ' << (int) out[i].b << std::endl;
         }
         return out;
     }
