@@ -27,6 +27,7 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     } else {
         std::cerr << "Antialiasing Samples: " << samples << std::endl;
     }
+    std::cerr << "Initializing context..." << std::endl;
     double r = 1.0 * image_width / image_height;
     viewport<T> *vp;
     if (samples == 1) {
@@ -40,9 +41,14 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
             100)); // the earth
     world.add_object(std::make_shared<sphere>(vec3d{0, 0, sphere_z}, sphere_r));
     timer tm;
+    std::cerr << "Rendering..." << std::endl;
     tm.start_measure();
     auto image = vp->render(world, vec3d::zero(),
                             image_width, image_height); // camera position as the coordinate origin
+    tm.stop_measure();
+    std::cerr << "Applying gamma2..." << std::endl;
+    tm.start_measure();
+    image = image.gamma2(); // gamma correction
     tm.stop_measure();
     if (!caption.empty()) {
         image.print(caption,

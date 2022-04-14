@@ -71,6 +71,14 @@ struct pixel {
     static inline T max_value() {
         return mod; // FIXME
     }
+
+    inline pixel<T> gamma2() const {
+        const auto max = max_value();
+        const double r_ = sqrt(1.0 * this->r / max);
+        const double g_ = sqrt(1.0 * this->g / max);
+        const double b_ = sqrt(1.0 * this->b / max);
+        return pixel<T>::from_normalized(r_, g_, b_);
+    }
 };
 
 template<
@@ -213,6 +221,15 @@ public:
             out[i] = pixel<T>::from(src[i]);
         }
         return out;
+    }
+
+    bitmap<T> gamma2() const {
+        std::vector<pixel<T>> out;
+        out.reserve(content.size());
+        for (const auto &pix: content) {
+            out.push_back(pix.gamma2());
+        }
+        return bitmap<T>{width, height, std::move(out)};
     }
 
 };
