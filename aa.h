@@ -7,9 +7,11 @@
 
 #include "vec.h"
 #include "viewport.h"
+#include "hitlist.h"
 #include <vector>
 #include <thread>
 #include <algorithm>
+#include <random>
 
 // Antialiasing viewport
 template<typename T>
