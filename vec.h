@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <random>
+#include <ostream>
 
 static inline bool eq(int a, int b) {
     return a == b;

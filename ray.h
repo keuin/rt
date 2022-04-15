@@ -6,6 +6,7 @@
 #define RT_RAY_H
 
 #include "vec.h"
+#include "bitmap.h"
 
 // A ray is a half-line, starts from a 3d point, along the direction of a unit vector, to the infinity
 template<typename T>
