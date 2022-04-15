@@ -88,10 +88,10 @@ struct vec3 {
         return *this * (1.0 / norm());
     }
 
-    // Get the reflected vector. Current vector is the incoming vector, n is the normal vector (length should be 1).
-    vec3 reflect(const vec3 &n) const {
-        assert(fabs(n.mod2() - 1.0) < 1e-8);
-        return *this - 2.0 * dot(*this, n) * n;
+    // Get the reflected vector. Current vector is the normal vector (length should be 1), v is the incoming vector.
+    vec3 reflect(const vec3 &v) const {
+        assert(fabs(mod2() - 1.0) < 1e-8);
+        return v - (2.0 * dot(v)) * (*this);
     }
 };
 

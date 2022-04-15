@@ -75,3 +75,27 @@ TEST(Vec, Mod2) {
     ASSERT_EQ(a.mod2(), 14);
     ASSERT_LE(abs(b.mod2() - (2.5 * 2.5 + 3 * 3 + 1.2 * 1.2)), 1e-10);
 }
+
+TEST(Vec, IsZero) {
+    vec3i a{1,0,0}, b{0,-1,0}, c{1,2,3};
+    ASSERT_FALSE(a.is_zero());
+    ASSERT_FALSE(b.is_zero());
+    ASSERT_FALSE(c.is_zero());
+
+    vec3d d{0.1,0,0}, e{0,-0.1,0},f{0.1,0.1,0.1};
+    ASSERT_FALSE(d.is_zero());
+    ASSERT_FALSE(e.is_zero());
+    ASSERT_FALSE(f.is_zero());
+
+    vec3i g{0,0,0};
+    vec3d h{0,0,0}, i{1e-10,0,0}, j{1e-10,1e-10,1e-10};
+    ASSERT_TRUE(g.is_zero());
+    ASSERT_TRUE(h.is_zero());
+    ASSERT_TRUE(i.is_zero());
+    ASSERT_TRUE(j.is_zero());
+}
+
+TEST(Vec, Reflect) {
+    vec3d n{1,0,0}, u{-1,1.1,0}, v{1,1.1,0};
+    ASSERT_EQ(v, n.reflect(u));
+}
