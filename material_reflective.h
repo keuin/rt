@@ -13,6 +13,8 @@ class material_reflective : public material {
     vec3d albedo;
 public:
     explicit material_reflective(vec3d &color) : albedo(color) {}
+    explicit material_reflective(vec3d &&color) : albedo(color) {}
+    explicit material_reflective(double color) : albedo{color, color, color} {}
 
     bool scatter(ray3d &r, const object &hit_obj, double hit_t, random_uv_gen_3d &ruvg) const override;
 };
