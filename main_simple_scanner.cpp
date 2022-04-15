@@ -91,6 +91,8 @@ int main(int argc, char **argv) {
     }
 #ifndef NDEBUG
     std::cerr << "Notice: assertion is enabled." << std::endl;
+#else
+    std::cerr << "Notice: assertion is disabled." << std::endl;
 #endif
     std::string iw{argv[1]}, ih{argv[2]}, vw{argv[3]}, fl{argv[4]},
             sz{argv[5]}, sr{argv[6]}, sp{argv[7]}, cap{};
