@@ -14,7 +14,8 @@
 #include "hitlist.h"
 #include "sphere.h"
 #include "aa.h"
-#include "material.h"
+#include "material_diffusive.h"
+#include "material_reflective.h"
 
 // T: intermediate color depth
 template<typename T>

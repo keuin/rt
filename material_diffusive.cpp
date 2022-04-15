@@ -3,7 +3,7 @@
 //
 
 #include "vec.h"
-#include "material.h"
+#include "material_diffusive.h"
 
 
 bool material_diffuse_lambertian::scatter(ray3d &r, const object &hit_obj, double hit_t, random_uv_gen_3d &ruvg) const {
