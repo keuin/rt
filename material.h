@@ -5,6 +5,7 @@
 #ifndef RT_MATERIAL_H
 #define RT_MATERIAL_H
 
+#include "vec.h"
 #include "object.h"
 
 class object;

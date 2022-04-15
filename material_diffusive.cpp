@@ -2,6 +2,7 @@
 // Created by Keuin on 2022/4/15.
 //
 
+#include "vec.h"
 #include "material.h"
 
 
