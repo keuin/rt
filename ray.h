@@ -13,7 +13,7 @@ template<typename T>
 class ray3 {
     vec3<T> source_;
     vec3<T> direction_; // unit vector
-    double decay_; // How much power remaining
+    vec3d decay_; // How much power remaining
 
 public:
     ~ray3() = default;
@@ -30,7 +30,7 @@ public:
     }
 
     ray3(const vec3<T> &source, const vec3<T> &direction) :
-            source_(source), direction_(direction.unit_vec()), decay_(1.0) {}
+            source_(source), direction_(direction.unit_vec()), decay_{vec3d::one()} {}
 
     // Get the source point from where the ray emits.
     vec3<T> source() const {
@@ -65,11 +65,11 @@ public:
         return decay_ * color;
     }
 
-    void decay(double a) {
-        decay_ *= a;
+    void decay(const vec3d &a) {
+        decay_ = decay_.scale(a);
     }
 
-    double decay() const {
+    vec3d decay() const {
         return decay_;
     }
 

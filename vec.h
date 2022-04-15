@@ -36,10 +36,18 @@ struct vec3 {
         return vec3{0, 0, 0};
     }
 
+    static vec3 one() {
+        return vec3{1, 1, 1};
+    }
+
     bool is_zero() const {
 #define EPS (1e-8)
         return x >= -EPS && y >= -EPS && z >= -EPS && x <= EPS && y <= EPS && z <= EPS;
 #undef EPS
+    }
+
+    bool is_one() const {
+        return (*this - vec3::one()).is_zero();
     }
 
     vec3 operator+(const vec3 &b) const {
@@ -66,6 +74,11 @@ struct vec3 {
     // cross product (aka outer product, or vector product, producing a vector)
     vec3 cross(const vec3 &b) const {
         return vec3{.x=y * b.z - z * b.y, .y=x * b.z - z * b.x, .z=x * b.y - y * b.x};
+    }
+
+    // Multiply with b on every dimension.
+    vec3 scale(const vec3 &b) const {
+        return vec3{.x=x * b.x, .y=y * b.y, .z=z * b.z};
     }
 
     // norm value

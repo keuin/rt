@@ -39,7 +39,7 @@ public:
     // Given a ray, compute the color.
     template<typename T>
     pixel<T> color(ray3d r, random_uv_gen_3d &ruvg, uint_fast32_t max_recursion_depth = 64) const {
-        assert(r.decay() == 1.0);
+        assert(r.decay().is_one());
         while (max_recursion_depth-- > 0) {
             // Detect hits
             bool hit = false;

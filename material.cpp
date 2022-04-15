@@ -18,14 +18,19 @@ bool material_diffuse_lambertian::scatter(ray3d &r, const object &hit_obj, doubl
     return true;
 }
 
-material_diffuse_lambertian::material_diffuse_lambertian(double albedo) : albedo(albedo) {
+material_diffuse_lambertian::material_diffuse_lambertian(vec3d albedo) : albedo(albedo) {
+    assert(albedo.mod2() >= 0);
+    assert(albedo.mod2() <= 1);
+}
+
+material_diffuse_lambertian::material_diffuse_lambertian(double albedo) : albedo{albedo, albedo, albedo} {
     assert(albedo >= 0);
     assert(albedo <= 1);
 }
 
-material_diffuse_simple::material_diffuse_simple(double albedo) : albedo(albedo) {
-    assert(albedo >= 0);
-    assert(albedo <= 1);
+material_diffuse_simple::material_diffuse_simple(vec3d albedo) : albedo(albedo) {
+    assert(albedo.mod2() >= 0);
+    assert(albedo.mod2() <= 1);
 }
 
 bool material_diffuse_simple::scatter(ray3d &r, const object &hit_obj, double hit_t, random_uv_gen_3d &ruvg) const {
@@ -41,9 +46,14 @@ bool material_diffuse_simple::scatter(ray3d &r, const object &hit_obj, double hi
     return true;
 }
 
-material_diffuse_hemispherical::material_diffuse_hemispherical(double albedo) : albedo(albedo) {
+material_diffuse_simple::material_diffuse_simple(double albedo) : albedo{albedo, albedo, albedo} {
     assert(albedo >= 0);
     assert(albedo <= 1);
+}
+
+material_diffuse_hemispherical::material_diffuse_hemispherical(vec3d albedo) : albedo(albedo) {
+    assert(albedo.mod2() >= 0);
+    assert(albedo.mod2() <= 1);
 }
 
 bool
@@ -58,4 +68,9 @@ material_diffuse_hemispherical::scatter(ray3d &r, const object &hit_obj, double 
     r.source(hit_point);
     r.direction((diffuse_target - hit_point).unit_vec()); // the new diffused ray we trace on
     return true;
+}
+
+material_diffuse_hemispherical::material_diffuse_hemispherical(double albedo) : albedo{albedo, albedo, albedo} {
+    assert(albedo >= 0);
+    assert(albedo <= 1);
 }

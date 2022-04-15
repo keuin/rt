@@ -123,6 +123,11 @@ pixel<T> operator*(S scale, const pixel <T> &pixel) {
     return ::pixel < T > {.r=(T) (pixel.r * scale), .g=(T) (pixel.g * scale), .b=(T) (pixel.b * scale)};
 }
 
+template<typename S, typename T>
+pixel<T> operator*(const vec3<S> &scale, const pixel <T> &pixel) {
+    return ::pixel < T > {.r=(T) (pixel.r * scale.x), .g=(T) (pixel.g * scale.y), .b=(T) (pixel.b * scale.z)};
+}
+
 // Mix two colors a and b. Returns a*u + b*v
 template<typename T>
 inline pixel<T> mix(const pixel<T> &a, const pixel<T> &b, double u, double v) {
