@@ -103,5 +103,5 @@ int main(int argc, char **argv) {
                              std::stod(vw), std::stod(fl),
                              std::stod(sz), std::stod(sr),
                              std::stoul(sp), cap,
-                             std::max((int) (1.0 * image_width * 0.015 / 8), 1));
+                             std::max((int) (1.0 * image_width * 0.010 / 8), 1));
 }
