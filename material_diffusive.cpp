@@ -20,8 +20,12 @@ bool material_diffuse_lambertian::scatter(ray3d &r, const object &hit_obj, doubl
 }
 
 material_diffuse_lambertian::material_diffuse_lambertian(vec3d albedo) : albedo(albedo) {
-    assert(albedo.mod2() >= 0);
-    assert(albedo.mod2() <= 1);
+    assert(albedo.x >= 0);
+    assert(albedo.y >= 0);
+    assert(albedo.z >= 0);
+    assert(albedo.x <= 1);
+    assert(albedo.y <= 1);
+    assert(albedo.z <= 1);
 }
 
 material_diffuse_lambertian::material_diffuse_lambertian(double albedo) : albedo{albedo, albedo, albedo} {
@@ -30,8 +34,12 @@ material_diffuse_lambertian::material_diffuse_lambertian(double albedo) : albedo
 }
 
 material_diffuse_simple::material_diffuse_simple(vec3d albedo) : albedo(albedo) {
-    assert(albedo.mod2() >= 0);
-    assert(albedo.mod2() <= 1);
+    assert(albedo.x >= 0);
+    assert(albedo.y >= 0);
+    assert(albedo.z >= 0);
+    assert(albedo.x <= 1);
+    assert(albedo.y <= 1);
+    assert(albedo.z <= 1);
 }
 
 bool material_diffuse_simple::scatter(ray3d &r, const object &hit_obj, double hit_t, random_uv_gen_3d &ruvg) const {
@@ -53,8 +61,12 @@ material_diffuse_simple::material_diffuse_simple(double albedo) : albedo{albedo,
 }
 
 material_diffuse_hemispherical::material_diffuse_hemispherical(vec3d albedo) : albedo(albedo) {
-    assert(albedo.mod2() >= 0);
-    assert(albedo.mod2() <= 1);
+    assert(albedo.x >= 0);
+    assert(albedo.y >= 0);
+    assert(albedo.z >= 0);
+    assert(albedo.x <= 1);
+    assert(albedo.y <= 1);
+    assert(albedo.z <= 1);
 }
 
 bool
