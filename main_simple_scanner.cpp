@@ -17,6 +17,10 @@
 #include "material_diffusive.h"
 #include "material_reflective.h"
 
+// Select the scene to render
+//#define SCENE_DIFFUSE
+#define SCENE_REFLECT
+
 // T: intermediate color depth
 template<typename T>
 void generate_image(uint16_t image_width, uint16_t image_height, double viewport_width, double focal_length,
@@ -35,12 +39,26 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     } else {
         vp = new aa_viewport<T>{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}, samples};
     }
-    material_diffuse_lambertian materi{0.5};
     hitlist world;
+#ifdef SCENE_DIFFUSE
+    material_diffuse_lambertian materi{0.5};
     world.add_object(std::make_shared<sphere>(
             vec3d{0, -100.5, -1},
             100, materi)); // the earth
     world.add_object(std::make_shared<sphere>(vec3d{0, 0, sphere_z}, sphere_r, materi));
+#endif
+#ifdef SCENE_REFLECT
+    material_diffuse_lambertian m_ground{{0.8, 0.8, 0.0}};
+    material_diffuse_lambertian m_ball_center{{0.7, 0.3, 0.3}};
+    material_reflective m_ball_left{{0.8, 0.8, 0.8}};
+    material_reflective m_ball_right{{0.8, 0.6, 0.2}};
+    // the earth
+    world.add_object(std::make_shared<sphere>(vec3d{0.0, -100.5, -1.0}, 100.0, m_ground));
+    // three balls
+    world.add_object(std::make_shared<sphere>(vec3d{-1.0, 0.0, -1.0}, 0.5, m_ball_left));
+    world.add_object(std::make_shared<sphere>(vec3d{0.0, 0.0, -1.0}, 0.5, m_ball_center));
+    world.add_object(std::make_shared<sphere>(vec3d{1.0, 0.0, -1.0}, 0.5, m_ball_right));
+#endif
     timer tm;
     std::cerr << "Rendering..." << std::endl;
     tm.start_measure();
