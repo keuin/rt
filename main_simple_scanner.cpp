@@ -50,7 +50,7 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
 #ifdef SCENE_REFLECT
     material_diffuse_lambertian m_ground{{0.8, 0.8, 0.0}};
     material_diffuse_lambertian m_ball_center{{0.7, 0.3, 0.3}};
-    material_reflective m_ball_left{{0.8, 0.8, 0.8}};
+    material_fuzzy_reflective m_ball_left{{0.8, 0.8, 0.8}, 1.0};
     material_reflective m_ball_right{{0.8, 0.6, 0.2}};
     // the earth
     world.add_object(std::make_shared<sphere>(vec3d{0.0, -100.5, -1.0}, 100.0, m_ground));
