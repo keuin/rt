@@ -78,21 +78,12 @@ public:
                 return pixel<T>::from_normalized(nv);
 #endif
 #ifdef T_DIFFUSE
-                const auto hit_point = r.at(hit_t); // hit point, on the surface
-                auto nv = hit_obj->normal_vector(hit_point);
-                if (dot(nv, r.direction()) > 0) return pixel<T>::black(); // discard rays from inner (or invert nv)
-#ifdef DIFFUSE_SIMPLE
-                vec3d diffuse_target = hit_point + nv + ruvg.range01();
-#endif
-#ifdef DIFFUSE_LR
-                vec3d diffuse_target = hit_point + nv + ruvg.normalized();
-#endif
-#ifdef DIFFUSE_HEMI
-                vec3d diffuse_target = hit_point + ruvg.hemisphere(nv);
-#endif
-                r.decay(0.5); // lose 50% light when diffused
-                r.source(hit_point); r.direction((diffuse_target - hit_point).unit_vec()); // the new diffused ray we trace on
-                continue;
+                const auto &materi = hit_obj->material();
+                if (materi.scatter(r, *hit_obj, hit_t, ruvg)) {
+                    continue; // The ray is scatted by an object. Continue processing the scattered ray.
+                } else {
+                    return pixel<T>::black(); // The ray is absorbed by an object completely. Return black.
+                }
 #endif
             }
 

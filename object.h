@@ -5,18 +5,18 @@
 #ifndef RT_OBJECT_H
 #define RT_OBJECT_H
 
-#include "hitlist.h"
-#include "viewport.h"
-#include "timer.h"
-#include "bitmap.h"
+#include "material.h"
 #include "ray.h"
 #include "vec.h"
+#include "bitmap.h"
 #include <cstdlib>
 #include <memory>
 #include <limits>
 #include <vector>
 #include <iostream>
 #include <cstdint>
+
+class material;
 
 class object {
 public:
@@ -36,6 +36,10 @@ public:
 
     // subclasses must have virtual destructors
     virtual ~object() = default;
+
+    // Get this object's material.
+    virtual material &material() const = 0;
 };
+
 
 #endif //RT_OBJECT_H

@@ -14,6 +14,7 @@
 #include "hitlist.h"
 #include "sphere.h"
 #include "aa.h"
+#include "material.h"
 
 #define DEMO_BALL
 
@@ -35,11 +36,12 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     } else {
         vp = new aa_viewport<T>{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}, samples};
     }
+    material_diffuse_lambertian materi{0.5};
     hitlist world;
     world.add_object(std::make_shared<sphere>(
             vec3d{0, -100.5, -1},
-            100)); // the earth
-    world.add_object(std::make_shared<sphere>(vec3d{0, 0, sphere_z}, sphere_r));
+            100, materi)); // the earth
+    world.add_object(std::make_shared<sphere>(vec3d{0, 0, sphere_z}, sphere_r, materi));
     timer tm;
     std::cerr << "Rendering..." << std::endl;
     tm.start_measure();

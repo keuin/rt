@@ -10,6 +10,7 @@
 #include "viewport.h"
 #include "timer.h"
 #include "bitmap.h"
+#include "material.h"
 #include "ray.h"
 #include "vec.h"
 #include <cstdlib>
@@ -19,20 +20,27 @@
 #include <iostream>
 #include <cstdint>
 
+class material;
+
 class sphere : public object {
     vec3d center;
     double radius;
+    class material &materi;
 
 public:
     sphere() = delete;
 
-    sphere(const vec3d &center, double radius) : center(center), radius(radius) {}
+    sphere(const vec3d &center, double radius, class material &materi) : center(center), radius(radius), materi(materi) {}
 
     ~sphere() override = default;
 
     vec3d normal_vector(const vec3d &where) const override {
         // We assume the point is on surface, speeding up the normalization
         return (where - center) / radius;
+    }
+
+    class material &material() const override {
+        return materi;
     }
 
     bool hit(const ray3d &r, double &t, double t1, double t2) const override {
