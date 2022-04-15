@@ -16,8 +16,6 @@
 #include "aa.h"
 #include "material.h"
 
-#define DEMO_BALL
-
 // T: intermediate color depth
 template<typename T>
 void generate_image(uint16_t image_width, uint16_t image_height, double viewport_width, double focal_length,

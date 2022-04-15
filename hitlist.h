@@ -22,11 +22,6 @@
 //#define T_NORM_VISUAL
 #define T_DIFFUSE
 
-// Select which diffuse method to use
-//#define DIFFUSE_SIMPLE // Diffuse with a random vector whose length is in [0, 1]
-#define DIFFUSE_LR     // Diffuse with (possibly wrong) Lambertian Reflection, i.e. using a random unit vector
-//#define DIFFUSE_HEMI   // Diffuse with hemispherical scattering, i.e. using a normalized random vector within the hemisphere
-
 // A world, T is color depth
 class hitlist {
     std::vector<std::shared_ptr<object>> objects;
