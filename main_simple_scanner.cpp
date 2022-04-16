@@ -16,10 +16,12 @@
 #include "aa.h"
 #include "material_diffusive.h"
 #include "material_reflective.h"
+#include "material_dielectric.h"
 
 // Select the scene to render
 //#define SCENE_DIFFUSE
-#define SCENE_REFLECT
+//#define SCENE_REFLECT
+#define SCENE_DIALECT
 
 // T: intermediate color depth
 template<typename T>
@@ -51,6 +53,18 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     material_diffuse_lambertian m_ground{{0.8, 0.8, 0.0}};
     material_diffuse_lambertian m_ball_center{{0.7, 0.3, 0.3}};
     material_fuzzy_reflective m_ball_left{{0.8, 0.8, 0.8}, 1.0};
+    material_reflective m_ball_right{{0.8, 0.6, 0.2}};
+    // the earth
+    world.add_object(std::make_shared<sphere>(vec3d{0.0, -100.5, -1.0}, 100.0, m_ground));
+    // three balls
+    world.add_object(std::make_shared<sphere>(vec3d{-1.0, 0.0, -1.0}, 0.5, m_ball_left));
+    world.add_object(std::make_shared<sphere>(vec3d{0.0, 0.0, -1.0}, 0.5, m_ball_center));
+    world.add_object(std::make_shared<sphere>(vec3d{1.0, 0.0, -1.0}, 0.5, m_ball_right));
+#endif
+#ifdef SCENE_DIALECT
+    material_diffuse_lambertian m_ground{{0.8, 0.8, 0.0}};
+    material_diffuse_lambertian m_ball_center{{0.7, 0.3, 0.3}};
+    material_dielectric m_ball_left{1.5};
     material_reflective m_ball_right{{0.8, 0.6, 0.2}};
     // the earth
     world.add_object(std::make_shared<sphere>(vec3d{0.0, -100.5, -1.0}, 100.0, m_ground));
