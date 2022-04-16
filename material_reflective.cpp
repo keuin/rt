@@ -19,10 +19,10 @@ bool material_reflective_<false>::scatter(ray3d &r, const object &hit_obj, doubl
     const auto alive = dot(reflected, nv) > 0;
 #ifdef LOG_TRACE
     if (!alive) {
-        TRACELOG("    absorbed (perfectly smooth material) (reflected: [%-10f,%-10f,%-10f], nv: [%-10f,%-10f,%-10f])\n",
+        TRACELOG("    absorb (perfectly smooth material) (reflected: [%-10f,%-10f,%-10f], nv: [%-10f,%-10f,%-10f])\n",
                  reflected.x, reflected.y, reflected.z, nv.x, nv.y, nv.z);
     } else {
-        TRACELOG("    reflected (perfectly smooth material)\n");
+        TRACELOG("    reflect (perfectly smooth material)\n");
     }
 #endif
     return alive;
@@ -40,10 +40,10 @@ bool material_reflective_<true>::scatter(ray3d &r, const object &hit_obj, double
     const auto alive = dot(reflected, nv) > 0;
 #ifdef LOG_TRACE
     if (!alive) {
-        TRACELOG("    absorbed (fuzzy reflective material) (reflected: [%-10f,%-10f,%-10f], nv: [%-10f,%-10f,%-10f])\n",
+        TRACELOG("    absorb (fuzzy reflective material) (reflected: [%-10f,%-10f,%-10f], nv: [%-10f,%-10f,%-10f])\n",
                  reflected.x, reflected.y, reflected.z, nv.x, nv.y, nv.z);
     } else {
-        TRACELOG("    reflected (fuzzy reflective material)\n");
+        TRACELOG("    reflect (fuzzy reflective material)\n");
     }
 #endif
     return alive;
