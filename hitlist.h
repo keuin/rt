@@ -11,6 +11,7 @@
 #include "ray.h"
 #include "vec.h"
 #include "object.h"
+#include "tracelog.h"
 #include <cstdlib>
 #include <memory>
 #include <limits>
@@ -21,15 +22,6 @@
 //#define T_SIMPLE_COLOR
 //#define T_NORM_VISUAL
 #define T_DIFFUSE
-
-// log ray traces to stderr
-//#define LOG_TRACE
-
-#ifdef LOG_TRACE
-#define TRACELOG(...) (fprintf(stderr, __VA_ARGS__))
-#else
-#define TRACELOG(...)
-#endif
 
 // A world, T is color depth
 class hitlist {
@@ -50,9 +42,10 @@ public:
     pixel<T> color(ray3d r, random_uv_gen_3d &ruvg, uint_fast32_t max_recursion_depth = 64) const {
         assert(r.decay().is_one());
         TRACELOG("+++ start tracing (limit=%zu)\n", max_recursion_depth);
-        TRACELOG("    ray: [%10f,%10f,%10f], decay=[%10f,%10f,%10f]\n",
+        TRACELOG("    ray: [%-10f,%-10f,%-10f], decay=[%-10f,%-10f,%-10f]\n",
                  r.direction().x, r.direction().y, r.direction().z, r.decay().x, r.decay().y, r.decay().z);
         while (max_recursion_depth-- > 0) {
+            TRACELOG("    step start (remaining: %lu)\n", max_recursion_depth + 1);
             // Detect hits
             bool hit = false;
             double hit_t = std::numeric_limits<double>::infinity();
@@ -77,7 +70,8 @@ public:
 #ifdef LOG_TRACE
                 const auto _hit_p_ = r.at(hit_t);
                 const auto _rn_ = dot(r.direction(), hit_obj->normal_vector(_hit_p_));
-                TRACELOG("    hit object <%p> at [%10f,%10f,%10f], t=%10f, surface=%10f (%s)\n",
+                TRACELOG("    hit object %s <%p> at [%-10f,%-10f,%-10f], t=%-10f, surface=%-10f (%s)\n",
+                         typeid(*hit_obj).name(),
                          hit_obj.get(), _hit_p_.x, _hit_p_.y, _hit_p_.z,
                          hit_t, _rn_, (_rn_ < 0) ? "outside" : "inside");
 #endif
@@ -94,7 +88,7 @@ public:
 #ifdef T_DIFFUSE
                 const auto &materi = hit_obj->material();
                 if (materi.scatter(r, *hit_obj, hit_t, ruvg)) {
-                    TRACELOG("    scattered: [%10f,%10f,%10f], decay=[%10f,%10f,%10f]\n",
+                    TRACELOG("    scattered ray: [%-10f,%-10f,%-10f], decay=[%-10f,%-10f,%-10f]\n",
                              r.direction().x, r.direction().y, r.direction().z,
                              r.decay().x, r.decay().y, r.decay().z);
                     continue; // The ray is scatted by an object. Continue processing the scattered ray.
@@ -105,6 +99,7 @@ public:
 #endif
             }
 
+            TRACELOG("    hit infinity (light source)\n");
             // Does not hit anything. Get background color (infinity)
             const auto u = (r.direction().y + 1.0) * 0.5;
             const auto c = mix(
@@ -113,19 +108,15 @@ public:
                     1.0 - u,
                     u
             );
+
+            TRACELOG("--- finish (hit infinity)\n");
 #ifdef T_DIFFUSE
-#ifdef LOG_TRACE
-            const auto co = pixel8b::from(r.hit(c));
-            TRACELOG("    result: [%d, %d, %d]\n", co.r, co.g, co.b);
-            TRACELOG("--- finish (reached infinity)\n");
-#endif
             return r.hit(c);
 #else
-            TRACELOG("--- finish (hit)\n");
             return c;
 #endif
         }
-        TRACELOG("--- finish (max search depth)\n");
+        TRACELOG("--- finish (trace step limit reached) [XX]\n");
         return pixel<T>::black(); // reached recursion time limit, very little light
     }
 };

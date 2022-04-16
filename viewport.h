@@ -10,6 +10,7 @@
 #include "ray.h"
 #include "vec.h"
 #include "hitlist.h"
+#include "tracelog.h"
 #include <cstdlib>
 #include <memory>
 #include <limits>
@@ -97,7 +98,19 @@ public:
                 const auto dir = r + off; // direction vector from camera to current pixel on screen
                 ray3d ray{viewpoint, dir}; // from camera to pixel (on the viewport)
                 const auto pixel = world.color<T>(ray, ruvg);
-                image.set(i + img_hw, -j + img_hh, pixel);
+                const auto x_ = i + img_hw, y_ = -j + img_hh;
+                image.set(x_, y_, pixel);
+
+#ifdef LOG_TRACE
+                const auto ret = pixel;
+                const auto ret8b = pixel8b::from(ret);
+                const auto ret8bg2 = pixel8b::from(ret.gamma2());
+                TRACELOG(" ^  apply to pixel: (%d, %d), color: [%f, %f, %f] (8bit: [%d, %d, %d], 8bit-gamma2: [%d, %d, %d])\n",
+                         x_, y_,
+                         (double) ret.r, (double) ret.g, (double) ret.b,
+                         ret8b.r, ret8b.g, ret8b.b,
+                         ret8bg2.r, ret8bg2.g, ret8bg2.b);
+#endif
             }
         }
         return image;

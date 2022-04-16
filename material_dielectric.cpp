@@ -3,6 +3,7 @@
 //
 
 #include "material_dielectric.h"
+#include "tracelog.h"
 
 bool material_dielectric::scatter(ray3d &r, const object &hit_obj, double hit_t, random_uv_gen_3d &ruvg) const {
     const auto hit_p = r.at(hit_t);
@@ -22,9 +23,11 @@ bool material_dielectric::scatter(ray3d &r, const object &hit_obj, double hit_t,
     // determine reflection or refraction using Schlick's Approximation.
     if (reflectance(cos1, ri_) > ruvg.range01_scalar()) {
         // reflect
+        TRACELOG("    reflect (dielectric material, schlick, ri=%-10f)\n", ri_);
         r2 = n.reflect(r.direction());
     } else {
         // refract
+        TRACELOG("    refract (dielectric material, schlick, ri=%-10f)\n", ri_);
         r2 = n.refract<true>(r.direction(), ri_);
     }
     r.direction(r2.unit_vec());

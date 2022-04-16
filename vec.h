@@ -10,6 +10,7 @@
 #include <ostream>
 #include <cassert>
 #include <algorithm>
+#include "tracelog.h"
 
 static inline bool eq(int a, int b) {
     return a == b;
@@ -134,8 +135,10 @@ struct vec3 {
             // TODO test TIR
             if (Enable_TIR) {
                 // ri_inv < sin(a1), cannot refract, must reflect (Total Internal Reflection)
+                TRACELOG("    reflect (TIR, d=%f)\n", d);
                 return reflect(r1);
             } else {
+                TRACELOG("    refract (forced, d=%f)\n", d);
                 d = -d; // abs, just make the sqrt has a real solution
             }
         }

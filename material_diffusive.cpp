@@ -4,6 +4,7 @@
 
 #include "vec.h"
 #include "material_diffusive.h"
+#include "tracelog.h"
 
 
 bool material_diffuse_lambertian::scatter(ray3d &r, const object &hit_obj, double hit_t, random_uv_gen_3d &ruvg) const {
@@ -16,6 +17,7 @@ bool material_diffuse_lambertian::scatter(ray3d &r, const object &hit_obj, doubl
     r.decay(albedo); // lose some light when diffused
     r.source(hit_point);
     r.direction((diffuse_target - hit_point).unit_vec()); // the new diffused ray we trace on
+    TRACELOG("    reflected (diffusive, lambertian material)\n");
     return true;
 }
 
@@ -52,6 +54,7 @@ bool material_diffuse_simple::scatter(ray3d &r, const object &hit_obj, double hi
     r.decay(albedo); // lose some light when diffused
     r.source(hit_point);
     r.direction((diffuse_target - hit_point).unit_vec()); // the new diffused ray we trace on
+    TRACELOG("    reflected (diffusive, simple material)\n");
     return true;
 }
 
@@ -80,6 +83,7 @@ material_diffuse_hemispherical::scatter(ray3d &r, const object &hit_obj, double 
     r.decay(albedo); // lose some light when diffused
     r.source(hit_point);
     r.direction((diffuse_target - hit_point).unit_vec()); // the new diffused ray we trace on
+    TRACELOG("    reflected (diffusive, hemispherical material)\n");
     return true;
 }
 
