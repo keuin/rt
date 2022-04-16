@@ -8,8 +8,8 @@
 #include "vec.h"
 #include "viewport.h"
 #include "hitlist.h"
+#include "threading.h"
 #include <vector>
-#include <thread>
 #include <algorithm>
 #include <random>
 
@@ -30,38 +30,50 @@ public:
     }
 
     virtual bitmap<T> render(const hitlist &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) {
-        const unsigned hwcc = std::thread::hardware_concurrency();
-        std::cerr << "Rendering with " << hwcc << " thread(s)." << std::endl;
-
-        const auto seed = 123456789012345678ULL;
-        std::mt19937_64 seedgen{seed}; // generates seeds for workers
+        static constexpr auto seed = 123456789012345678ULL;
+        const unsigned thread_count = std::min(std::thread::hardware_concurrency(), samples);
+        std::cerr << "Preparing tasks..." << std::endl;
         std::vector<bitmap<T>> images{samples, {1, 1}};
-        std::thread t;
+        std::mt19937_64 seedgen{seed}; // generates seeds for workers
 
-        std::vector<std::thread> workers;
-        unsigned remaining = samples; // tasks remaining
-        size_t base = 0;
-        while (remaining > 0) {
-            const unsigned n = std::min(hwcc, remaining); // threads in current batch
-            remaining -= n;
-            for (unsigned i = 0; i < n; ++i) {
-                workers.emplace_back(std::thread{
-                        [&](int tid, uint64_t seed, uint64_t diffuse_seed, std::vector<basic_viewport<T>> *subs, vec3d viewpoint,
-                            uint16_t image_width, uint16_t image_height) {
-                            bias_ctx bc{seed};
-                            auto image = (*subs)[tid].render(
-                                    world, viewpoint, image_width, image_height, bc, diffuse_seed);
-                            images[base + tid] = image;
-                        },
-                        i, seedgen(), seedgen(), subviews, viewpoint, image_width, image_height
-                });
-            }
-            for (auto &th: workers) {
-                th.join();
-            }
-            workers.clear();
-            base += n;
+        const struct s_render_shared {
+            std::vector<basic_viewport<T>> &subs;
+            vec3d viewpoint;
+            uint16_t image_width;
+            uint16_t image_height;
+            const hitlist &world;
+            std::vector<bitmap<T>> &images;
+        } s_{.subs=*subviews, .viewpoint = viewpoint,
+                .image_width=image_width, .image_height=image_height,
+                .world=world, .images=images
+        };
+
+        struct s_render_task {
+            uint32_t task_id;
+            uint64_t seed;
+            uint64_t diffuse_seed;
+            const s_render_shared &shared;
+        };
+
+        thread_pool<s_render_task> pool{thread_count};
+
+
+        for (typeof(samples) i = 0; i < samples; ++i) {
+            pool.submit_task([](s_render_task &task) {
+                bias_ctx bc{seed};
+                auto image = task.shared.subs[task.task_id].render(
+                        task.shared.world, task.shared.viewpoint,
+                        task.shared.image_width, task.shared.image_height,
+                        bc, task.diffuse_seed);
+                task.shared.images[task.task_id] = image;
+            }, s_render_task{
+                    .task_id = i, .seed=seedgen(), .diffuse_seed=seedgen(), .shared=s_
+            });
         }
+
+        std::cerr << "Rendering with " << thread_count << " thread(s)." << std::endl;
+        pool.start();
+        pool.wait();
         return bitmap<T>::average(images);
     }
 

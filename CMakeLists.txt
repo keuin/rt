@@ -4,6 +4,8 @@ project(rt)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(CMAKE_EXE_LINKER_FLAGS "-latomic")
+
 set(common_compiler_args "-Wall -Werror -Wno-unused -std=c++11 -pthread")
 set(CMAKE_CXX_FLAGS_DEBUG "${common_compiler_args} -g -ggdb -fsanitize=address -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "${common_compiler_args} -O2")
@@ -12,9 +14,9 @@ set(CMAKE_VERBOSE_MAKEFILE on)
 
 # main executable
 
-add_executable(rt main.cpp vec.h bitmap.h ray.h bitfont.h hitlist.h object.h sphere.h viewport.h aa.h material.h material_diffusive.h material_diffusive.cpp material_reflective.h material_reflective.cpp material_dielectric.cpp material_dielectric.h tracelog.h)
+add_executable(rt main.cpp vec.h bitmap.h ray.h bitfont.h hitlist.h object.h sphere.h viewport.h aa.h material.h material_diffusive.h material_diffusive.cpp material_reflective.h material_reflective.cpp material_dielectric.cpp material_dielectric.h tracelog.h threading.h)
 add_executable(image_output main_image_output.cpp vec.h bitmap.h bitfont.h hitlist.h object.h sphere.h viewport.h)
-add_executable(simple_scanner main_simple_scanner.cpp vec.h bitmap.h ray.h timer.h bitfont.h hitlist.h object.h sphere.h viewport.h aa.h material.h material_diffusive.h material_diffusive.cpp material_reflective.h material_reflective.cpp material_dielectric.cpp material_dielectric.h tracelog.h)
+add_executable(simple_scanner main_simple_scanner.cpp vec.h bitmap.h ray.h timer.h bitfont.h hitlist.h object.h sphere.h viewport.h aa.h material.h material_diffusive.h material_diffusive.cpp material_reflective.h material_reflective.cpp material_dielectric.cpp material_dielectric.h tracelog.h threading.h)
 
 # googletest
 
