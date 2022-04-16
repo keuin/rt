@@ -28,6 +28,9 @@ public:
         return hit(r, t, t1, std::numeric_limits<double>::infinity());
     }
 
+    // If given position is on the object's surface.
+    virtual bool is_on(const vec3d &p) const = 0;
+
     // Given a point on the surface, returns the normalized outer normal vector on that point.
     virtual vec3d normal_vector(const vec3d &where) const = 0;
 

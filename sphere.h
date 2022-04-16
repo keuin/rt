@@ -81,6 +81,10 @@ public:
         return hit;
     }
 
+    bool is_on(const vec3d &p) const override {
+        return ((p - center).mod2() - radius * radius) < 1e-10;
+    }
+
     pixel8b color() const override {
         return pixel8b::from_normalized(1.0, 0.0, 0.0);
     }
