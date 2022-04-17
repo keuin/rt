@@ -4,13 +4,15 @@ project(rt)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(CMAKE_EXE_LINKER_FLAGS "-latomic")
 
-set(common_compiler_args "-Wall -Werror -Wno-unused -std=c++11 -pthread")
+set(common_compiler_args "-Wall -Werror -Wno-unused -std=c++11")
 set(CMAKE_CXX_FLAGS_DEBUG "${common_compiler_args} -g -ggdb -fsanitize=address -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "${common_compiler_args} -O2")
 
 set(CMAKE_VERBOSE_MAKEFILE on)
+
+link_libraries(pthread)
+link_libraries(atomic)
 
 # main executable
 
