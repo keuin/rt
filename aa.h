@@ -64,7 +64,7 @@ public:
         tim.start_measure();
         for (typeof(samples) i = 0; i < samples; ++i) {
             pool.submit_task([](s_render_task &task) {
-                bias_ctx bc{seed};
+                bias_ctx bc{task.seed};
                 auto image = task.shared.subs[task.task_id].render(
                         task.shared.world, task.shared.viewpoint,
                         task.shared.image_width, task.shared.image_height,
