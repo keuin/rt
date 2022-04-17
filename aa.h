@@ -18,9 +18,11 @@ template<typename T>
 class aa_viewport : public viewport<T> {
     unsigned samples;
     std::vector<basic_viewport<T>> *subviews;
+    int threads;
 
 public:
-    aa_viewport(double width, double height, vec3d viewport_center, unsigned samples) : samples(samples) {
+    aa_viewport(double width, double height, vec3d viewport_center, unsigned samples, int threads = -1)
+            : samples(samples), threads{(threads > 0) ? threads : (int)std::thread::hardware_concurrency()} {
         assert(samples >= 1);
         subviews = new std::vector<basic_viewport<T>>{samples, {width, height, viewport_center}};
     }
@@ -31,9 +33,9 @@ public:
 
     virtual bitmap<T> render(const hitlist &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) {
         static constexpr auto seed = 123456789012345678ULL;
-        const unsigned thread_count = std::min(std::thread::hardware_concurrency(), samples);
+        const unsigned thread_count = std::min((unsigned)threads, samples);
         std::cerr << "Preparing tasks..." << std::endl;
-        std::vector<bitmap<T>> images{samples, {0,0}};
+        std::vector<bitmap<T>> images{samples, {0, 0}};
         std::mt19937_64 seedgen{seed}; // generates seeds for workers
 
         const struct s_render_shared {
