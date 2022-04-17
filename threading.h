@@ -54,7 +54,7 @@ template<typename T>
 void thread_pool<T>::start() {
     if (workers.empty()) {
         for (typeof(thread_count) i = 0; i < thread_count; ++i) {
-            workers.emplace_back(std::thread{[this]() { this->worker_main(); }});
+            workers.emplace_back(std::thread{&thread_pool<T>::worker_main, this});
         }
     } else {
         // TODO
