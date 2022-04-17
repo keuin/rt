@@ -86,7 +86,7 @@ public:
                 return pixel<T>::from_normalized(nv);
 #endif
 #ifdef T_DIFFUSE
-                const auto &materi = hit_obj->material();
+                const auto &materi = hit_obj->get_material();
                 if (materi.scatter(r, *hit_obj, hit_t, ruvg)) {
                     TRACELOG("    scattered ray: [%-10f,%-10f,%-10f], decay=[%-10f,%-10f,%-10f]\n",
                              r.direction().x, r.direction().y, r.direction().z,

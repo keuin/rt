@@ -39,7 +39,7 @@ public:
         return (where - center) / radius;
     }
 
-    class material &material() const override {
+    class material &get_material() const override {
         return materi;
     }
 
