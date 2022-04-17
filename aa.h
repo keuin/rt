@@ -33,7 +33,7 @@ public:
         static constexpr auto seed = 123456789012345678ULL;
         const unsigned thread_count = std::min(std::thread::hardware_concurrency(), samples);
         std::cerr << "Preparing tasks..." << std::endl;
-        std::vector<bitmap<T>> images{samples, {1, 1}};
+        std::vector<bitmap<T>> images{samples, {0,0}};
         std::mt19937_64 seedgen{seed}; // generates seeds for workers
 
         const struct s_render_shared {
@@ -56,8 +56,10 @@ public:
         };
 
         thread_pool<s_render_task> pool{thread_count};
+        timer tim{true};
 
-
+        std::cerr << "Seeding tasks..." << std::endl;
+        tim.start_measure();
         for (typeof(samples) i = 0; i < samples; ++i) {
             pool.submit_task([](s_render_task &task) {
                 bias_ctx bc{seed};
@@ -70,10 +72,16 @@ public:
                     .task_id = i, .seed=seedgen(), .diffuse_seed=seedgen(), .shared=s_
             });
         }
+        tim.stop_measure();
+        std::cerr << "Finish seeding. Speed: " << 1.0 * samples / tim.duration().count() << " task/sec" << std::endl;
 
         std::cerr << "Rendering with " << thread_count << " thread(s)." << std::endl;
+        tim.start_measure();
         pool.start();
         pool.wait();
+        tim.stop_measure();
+        std::cerr << "Finish rendering sub-pixels. Speed: " << 1.0 * tim.duration().count() / samples << "sec/image, "
+                  << 1.0 * samples * image_width * image_height / tim.duration().count() << " pixel/sec" << std::endl;
         return bitmap<T>::average(images);
     }
 
