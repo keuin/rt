@@ -6,6 +6,9 @@
 #define RT_TRACELOG_H
 
 // log ray traces to stderr
+// Note: please do not enable antialiasing if you wish to get a readable log.
+// These logs are simply printed to stderr. Using antialiasing will run
+// multiple render thread at the same time, which will mess up the log.
 //#define LOG_TRACE
 
 #ifdef LOG_TRACE
