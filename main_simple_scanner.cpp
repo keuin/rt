@@ -23,7 +23,10 @@
 //#define SCENE_REFLECT
 #define SCENE_DIALECT
 
+//#define OVERRIDE_FOV
+
 static constexpr uint64_t default_diffuse_seed = 123456789012345678ULL;
+static constexpr double fov_override = 90*(M_PI/180);
 
 // T: color depth, V: pos
 template<typename T, typename V>
@@ -39,6 +42,7 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     double r = 1.0 * image_width / image_height;
     hitlist world;
 
+#ifndef OVERRIDE_FOV
     ////////////////
     // noaa rendering
     bias_ctx no_bias{};
@@ -61,6 +65,31 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
             world, samples
     };
     ////////////////
+#else
+    ////////////////
+    // noaa rendering
+    bias_ctx no_bias{};
+    basic_viewport<T, V> vp_noaa{
+            vec3<V>::zero(), // camera position as the coordinate origin
+            vec3d{0, 0, -focal_length},
+            image_width, image_height,
+            fov_override,
+            world
+    };
+    ////////////////
+
+    ////////////////
+    // aa rendering
+    aa_viewport<T, V> vp_aa{
+            vec3<V>::zero(), // camera position as the coordinate origin
+            vec3d{0, 0, -focal_length},
+            image_width, image_height,
+            fov_override,
+            world, samples
+    };
+    ////////////////
+#endif
+
 #ifdef SCENE_DIFFUSE
     material_diffuse_lambertian materi{0.5};
     world.add_object(std::make_shared<sphere>(
