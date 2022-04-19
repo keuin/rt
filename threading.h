@@ -41,9 +41,12 @@ class thread_pool {
     void worker_main();
 
 public:
-    explicit thread_pool(unsigned thread_count, const U &shared_ctx, V &mut_shared_ctx) :
+    thread_pool(unsigned thread_count, const U &shared_ctx, V &mut_shared_ctx, size_t reserve_tasks = -1) :
             thread_count{thread_count}, shared_ctx{shared_ctx}, mut_shared_ctx{mut_shared_ctx} {
         std::cerr << "Using " << (counter.is_lock_free() ? "lock-free" : "locking") << " dispatcher." << std::endl;
+        if (reserve_tasks > 0) {
+            tasks.reserve(reserve_tasks);
+        }
     }
 
     // Thread unsafe!

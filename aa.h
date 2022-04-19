@@ -50,6 +50,26 @@ public:
         assert(samples >= 1);
     }
 
+    aa_viewport(const vec3<V> &cxyz,
+                const vec3<V> &screen_center,
+                uint16_t image_width,
+                uint16_t image_height,
+                double fov_h,
+                hitlist &world,
+                unsigned samples,
+                int threads = -1) :
+            cxyz(cxyz),
+            screen_center(screen_center),
+            image_width(image_width),
+            image_height(image_height),
+            screen_hw{(cxyz - screen_center).norm() * tan((double) fov_h / 2.0)},
+            screen_hh{screen_hw * ((double) image_height / image_width)},
+            world(world),
+            samples(samples),
+            threads((threads > 0) ? threads : (int) std::thread::hardware_concurrency()) {
+        assert(samples >= 1);
+    }
+
     bitmap<U> render() {
         static constexpr auto seed = 123456789012345678ULL;
         const unsigned thread_count = std::min((unsigned) threads, samples);
@@ -62,7 +82,7 @@ public:
             uint64_t diffuse_seed;
         };
 
-        thread_pool<s_render_task, typeof(*this), typeof(images)> pool{thread_count, *this, images};
+        thread_pool<s_render_task, typeof(*this), typeof(images)> pool{thread_count, *this, images, samples};
         timer tim{true};
 
         std::cerr << "Seeding tasks..." << std::endl;
