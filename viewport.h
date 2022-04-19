@@ -18,6 +18,7 @@
 #include <iostream>
 #include <cstdint>
 #include <random>
+#include <cmath>
 
 // bias context, used for placing sub-pixels
 class bias_ctx {
@@ -41,32 +42,40 @@ public:
     }
 };
 
-template<typename T>
-class viewport {
-public:
-    virtual bitmap<T> render(const hitlist &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) = 0;
-
-    virtual ~viewport() = default;
-};
-
+// TODO rename to camera
 // Single sampled viewport which supports bias sampling
-template<typename T>
-class basic_viewport : public viewport<T> {
-    const double half_width, half_height; // viewport size
-    const vec3d center; // coordinate of the viewport center point
-
+// U: color depth, V: pos
+template<typename U, typename V>
+class basic_viewport {
+    vec3<V> cxyz; // coordinate of the focus point
+    vec3<V> screen_center;
+//    double pitch; // TODO implement
+//    double yaw; // TODO implement
+    uint32_t image_width; // how many pixels every row has
+    uint32_t image_height; // how many pixels every column has
+    V screen_hw; // determined if screen_height is known
+    V screen_hh; // determined if screen_width is known
+//    double fov_h; // horizontal FOV, determined if screen_width or screen_height is known
+//    double focus_length; // distance between the focus point and the image screen
+    hitlist &world;
 public:
-    basic_viewport() = delete;
 
-    basic_viewport(double width, double height, vec3d viewport_center) :
-            half_width(width / 2.0), half_height(height / 2.0), center(viewport_center) {}
+    basic_viewport(const vec3<V> &cxyz, const vec3<V> &screen_center,
+                   uint32_t image_width, uint32_t image_height,
+                   double fov_h, hitlist &world) :
+            cxyz{cxyz}, screen_center{screen_center}, image_width{image_width}, image_height{image_height},
+            screen_hw{(cxyz - screen_center).norm() * tan((double) fov_h / 2.0)},
+            screen_hh{screen_hw * ((double) image_height / image_width)},
+            world{world} {}
 
-    virtual bitmap<T>
-    render(const hitlist &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) override {
-        bias_ctx bc{};
-        static constexpr uint64_t default_diffuse_seed = 123456789012345678ULL;
-        return render(world, viewpoint, image_width, image_height, bc, default_diffuse_seed);
-    }
+    basic_viewport(const vec3<V> &cxyz, const vec3<V> &screen_center,
+                   uint32_t image_width, uint32_t image_height,
+                   double screen_hw, double screen_hh,
+                   hitlist &world) :
+            cxyz{cxyz}, screen_center{screen_center}, image_width{image_width}, image_height{image_height},
+            screen_hw{screen_hw},
+            screen_hh{screen_hh},
+            world{world} {}
 
     /**
      * Generate the image seen on given viewpoint.
@@ -74,13 +83,14 @@ public:
      * @param by bias on y axis (0.0 <= by < 1.0)
      * @return
      */
-    virtual bitmap<T> render(const hitlist &world, vec3d viewpoint,
-                             uint16_t image_width, uint16_t image_height,
-                             bias_ctx &bias, uint64_t diffuse_seed) const {
-        bitmap<T> image{image_width, image_height};
+    bitmap<U> render(uint64_t diffuse_seed, bias_ctx &bias
+            /* by putting thread-specific parameters in call argument list, make users convenient*/) const {
+        // The implementation keep all mutable state in local stack,
+        // keeping the class immutable and thread-safe.
+        bitmap<U> image{image_width, image_height};
         random_uv_gen_3d ruvg{diffuse_seed};
-        double bx, by;
-        const auto r = center - viewpoint;
+        V bx, by;
+        const auto r = screen_center - cxyz;
         const int img_hw = image_width / 2, img_hh = image_height / 2;
         // iterate over every pixel on the image
         for (int j = -img_hh + 1; j <= img_hh; ++j) { // axis y, transformation is needed
@@ -91,13 +101,13 @@ public:
                 assert(bx < 1.0);
                 assert(by < 1.0);
                 const vec3d off{
-                        .x=(1.0 * i + bx) / img_hw * half_width,
-                        .y=(1.0 * j + by) / img_hh * half_height,
+                        .x=(1.0 * i + bx) / img_hw * screen_hw,
+                        .y=(1.0 * j + by) / img_hh * screen_hh,
                         .z=0.0
                 }; // offset on screen plane
                 const auto dir = r + off; // direction vector from camera to current pixel on screen
-                ray3d ray{viewpoint, dir}; // from camera to pixel (on the viewport)
-                const auto pixel = world.color<T>(ray, ruvg);
+                ray3d ray{cxyz, dir}; // from camera to pixel (on the viewport)
+                const auto pixel = world.color<U>(ray, ruvg);
                 const auto x_ = i + img_hw, y_ = -j + img_hh;
                 image.set(x_, y_, pixel);
 

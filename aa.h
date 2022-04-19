@@ -14,64 +14,71 @@
 #include <random>
 
 // Antialiasing viewport
-template<typename T>
-class aa_viewport : public viewport<T> {
+// U: color depth, V: pos
+template<typename U, typename V>
+class aa_viewport {
+    vec3<V> cxyz;
+    vec3<V> screen_center;
+    uint32_t image_width; // how many pixels every row has
+    uint32_t image_height; // how many pixels every column has
+    V screen_hw; // determined if screen_height is known
+    V screen_hh; // determined if screen_width is known
+    hitlist &world;
     unsigned samples;
-    std::vector<basic_viewport<T>> *subviews;
     int threads;
 
 public:
-    aa_viewport(double width, double height, vec3d viewport_center, unsigned samples, int threads = -1)
-            : samples(samples), threads{(threads > 0) ? threads : (int)std::thread::hardware_concurrency()} {
+
+    aa_viewport(const vec3<V> &cxyz,
+                const vec3<V> &screen_center,
+                uint16_t image_width,
+                uint16_t image_height,
+                V screen_hw,
+                V screen_hh,
+                hitlist &world,
+                unsigned samples,
+                int threads = -1) :
+            cxyz(cxyz),
+            screen_center(screen_center),
+            image_width(image_width),
+            image_height(image_height),
+            screen_hw(screen_hw),
+            screen_hh(screen_hh),
+            world(world),
+            samples(samples),
+            threads((threads > 0) ? threads : (int) std::thread::hardware_concurrency()) {
         assert(samples >= 1);
-        subviews = new std::vector<basic_viewport<T>>{samples, {width, height, viewport_center}};
     }
 
-    ~aa_viewport() {
-        delete subviews;
-    }
-
-    virtual bitmap<T> render(const hitlist &world, vec3d viewpoint, uint16_t image_width, uint16_t image_height) {
+    bitmap<U> render() {
         static constexpr auto seed = 123456789012345678ULL;
-        const unsigned thread_count = std::min((unsigned)threads, samples);
+        const unsigned thread_count = std::min((unsigned) threads, samples);
         std::cerr << "Preparing tasks..." << std::endl;
-        std::vector<bitmap<T>> images{samples, {0, 0}};
+        std::vector<bitmap<U>> images{samples, {0, 0}};
         std::mt19937_64 seedgen{seed}; // generates seeds for workers
 
-        const struct s_render_shared {
-            std::vector<basic_viewport<T>> &subs;
-            vec3d viewpoint;
-            uint16_t image_width;
-            uint16_t image_height;
-            const hitlist &world;
-            std::vector<bitmap<T>> &images;
-        } s_{.subs=*subviews, .viewpoint = viewpoint,
-                .image_width=image_width, .image_height=image_height,
-                .world=world, .images=images
-        };
-
         struct s_render_task {
-            uint32_t task_id;
-            uint64_t seed;
+            uint64_t bias_seed;
             uint64_t diffuse_seed;
-            const s_render_shared &shared;
         };
 
-        thread_pool<s_render_task> pool{thread_count};
+        thread_pool<s_render_task, typeof(*this), typeof(images)> pool{thread_count, *this, images};
         timer tim{true};
 
         std::cerr << "Seeding tasks..." << std::endl;
         tim.start_measure();
         for (typeof(samples) i = 0; i < samples; ++i) {
-            pool.submit_task([](s_render_task &task) {
-                bias_ctx bc{task.seed};
-                auto image = task.shared.subs[task.task_id].render(
-                        task.shared.world, task.shared.viewpoint,
-                        task.shared.image_width, task.shared.image_height,
-                        bc, task.diffuse_seed);
-                task.shared.images[task.task_id] = image;
+            pool.submit_task([](size_t tid, s_render_task &task, const aa_viewport<U, V> &ctx, typeof(images) &images) {
+                basic_viewport<U, V> vp{
+                        ctx.cxyz, ctx.screen_center,
+                        ctx.image_width, ctx.image_height,
+                        ctx.screen_hw, ctx.screen_hh,
+                        ctx.world
+                };
+                bias_ctx bc{task.bias_seed};
+                images[tid] = vp.render(task.diffuse_seed, bc);
             }, s_render_task{
-                    .task_id = i, .seed=seedgen(), .diffuse_seed=seedgen(), .shared=s_
+                    .bias_seed=seedgen(), .diffuse_seed=seedgen()
             });
         }
         tim.stop_measure();
@@ -84,12 +91,10 @@ public:
         tim.stop_measure();
         std::cerr << "Finish rendering sub-pixels. Speed: " << 1.0 * tim.duration().count() / samples << "sec/image, "
                   << 1.0 * samples * image_width * image_height / tim.duration().count() << " pixel/sec" << std::endl;
-        return bitmap<T>::average(images);
+        return bitmap<U>::average(images);
     }
 
 };
-
-using aa_viewport8b = aa_viewport<uint8_t>;
 
 
 #endif //RT_AA_H

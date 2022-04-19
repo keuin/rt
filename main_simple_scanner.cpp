@@ -23,8 +23,10 @@
 //#define SCENE_REFLECT
 #define SCENE_DIALECT
 
-// T: intermediate color depth
-template<typename T>
+static constexpr uint64_t default_diffuse_seed = 123456789012345678ULL;
+
+// T: color depth, V: pos
+template<typename T, typename V>
 void generate_image(uint16_t image_width, uint16_t image_height, double viewport_width, double focal_length,
                     double sphere_z, double sphere_r, unsigned samples, const std::string &caption = "",
                     unsigned caption_scale = 1) {
@@ -35,13 +37,30 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     }
     std::cerr << "Initializing context..." << std::endl;
     double r = 1.0 * image_width / image_height;
-    viewport<T> *vp;
-    if (samples == 1) {
-        vp = new basic_viewport<T>{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}};
-    } else {
-        vp = new aa_viewport<T>{viewport_width, viewport_width / r, vec3d{0, 0, -focal_length}, samples};
-    }
     hitlist world;
+
+    ////////////////
+    // noaa rendering
+    bias_ctx no_bias{};
+    basic_viewport<T, V> vp_noaa{
+            vec3<V>::zero(), // camera position as the coordinate origin
+            vec3d{0, 0, -focal_length},
+            image_width, image_height,
+            viewport_width / 2.0, ((double) image_height / image_width) * viewport_width / 2.0,
+            world
+    };
+    ////////////////
+
+    ////////////////
+    // aa rendering
+    aa_viewport<T, V> vp_aa{
+            vec3<V>::zero(), // camera position as the coordinate origin
+            vec3d{0, 0, -focal_length},
+            image_width, image_height,
+            viewport_width / 2.0, ((double) image_height / image_width) * viewport_width / 2.0,
+            world, samples
+    };
+    ////////////////
 #ifdef SCENE_DIFFUSE
     material_diffuse_lambertian materi{0.5};
     world.add_object(std::make_shared<sphere>(
@@ -76,8 +95,7 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     timer tm;
     std::cerr << "Rendering..." << std::endl;
     tm.start_measure();
-    auto image = vp->render(world, vec3d::zero(),
-                            image_width, image_height); // camera position as the coordinate origin
+    auto image = ((samples == 1) ? vp_noaa.render(default_diffuse_seed, no_bias) : vp_aa.render());
     tm.stop_measure();
     std::cerr << "Applying gamma2..." << std::endl;
     tm.start_measure();
@@ -94,7 +112,6 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     } else {
         std::cerr << "NOPRINT is defined. PPM Image won't be printed." << std::endl;
     }
-    delete vp;
 }
 
 int main(int argc, char **argv) {
@@ -115,9 +132,9 @@ int main(int argc, char **argv) {
         cap = std::string{argv[8]};
     }
     const auto image_width = std::stoul(iw);
-    generate_image<uint16_t>(image_width, std::stoul(ih),
-                             std::stod(vw), std::stod(fl),
-                             std::stod(sz), std::stod(sr),
-                             std::stoul(sp), cap,
-                             std::max((int) (1.0 * image_width * 0.010 / 8), 1));
+    generate_image<uint16_t, double>(image_width, std::stoul(ih),
+                                     std::stod(vw), std::stod(fl),
+                                     std::stod(sz), std::stod(sr),
+                                     std::stoul(sp), cap,
+                                     std::max((int) (1.0 * image_width * 0.010 / 8), 1));
 }
