@@ -9,7 +9,7 @@
     + Reflective (fuzzy, perfectly-smooth)
     + Dielectric (reflective & refractive & total internal reflection)
 - Shapes:
-    + sphere
+    + Sphere
 - Misc:
     + Text printing (font data copied
       from [cse457](https://courses.cs.washington.edu/courses/cse457/98a/tech/OpenGL/font.c))
