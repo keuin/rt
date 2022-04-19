@@ -48,6 +48,7 @@ public:
             samples(samples),
             threads((threads > 0) ? threads : (int) std::thread::hardware_concurrency()) {
         assert(samples >= 1);
+        assert(std::abs(1.0 * image_width / image_height - 1.0 * screen_hw / screen_hh) < 1e-8);
     }
 
     aa_viewport(const vec3<V> &cxyz,

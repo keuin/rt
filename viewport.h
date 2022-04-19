@@ -75,7 +75,9 @@ public:
             cxyz{cxyz}, screen_center{screen_center}, image_width{image_width}, image_height{image_height},
             screen_hw{screen_hw},
             screen_hh{screen_hh},
-            world{world} {}
+            world{world} {
+        assert(std::abs(1.0 * image_width / image_height - 1.0 * screen_hw / screen_hh) < 1e-8);
+    }
 
     /**
      * Generate the image seen on given viewpoint.
