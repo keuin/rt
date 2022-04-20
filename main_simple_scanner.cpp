@@ -21,8 +21,17 @@
 // Select the scene to render
 //#define SCENE_DIFFUSE
 //#define SCENE_REFLECT
-//#define SCENE_DIALECT
-#define SCENE_FOV
+#define SCENE_DIALECT
+//#define SCENE_FOV
+//#define SCENE_FREECAM
+
+#ifdef SCENE_FOV
+#define NO_DEFAULT_CAM
+#endif
+
+#ifdef SCENE_FREECAM
+#define NO_DEFAULT_CAM
+#endif
 
 static constexpr uint64_t default_diffuse_seed = 123456789012345678ULL;
 
@@ -40,7 +49,7 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     double r = 1.0 * image_width / image_height;
     hitlist world;
 
-#ifndef SCENE_FOV
+#ifndef NO_DEFAULT_CAM
     ////////////////
     // noaa rendering
     bias_ctx no_bias{};
@@ -63,7 +72,8 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
             world, samples
     };
     ////////////////
-#else
+#endif
+#ifdef SCENE_FOV
     // This scene needs custom viewport setting
     const auto fov_h = 2 * asin((double)1.0 / 3.0);
     ////////////////
@@ -91,6 +101,44 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
 
     material_diffuse_lambertian materi{0.5};
     world.add_object(std::make_shared<sphere>(vec3d{0, 0, -2}, 1, materi));
+#endif
+#ifdef SCENE_FREECAM
+    // This scene needs custom viewport setting
+    const auto fov_h = 121.28449291441746 * (M_PI / 180.0);
+    ////////////////
+    // noaa rendering
+    bias_ctx no_bias{};
+    basic_viewport<T, V> vp_noaa{
+            {-2,2,1}, // camera position as the coordinate origin
+            {0,0,-1},
+            image_width, image_height,
+            fov_h,
+            world
+    };
+    ////////////////
+
+    ////////////////
+    // aa rendering
+    aa_viewport<T, V> vp_aa{
+            {-2,2,1}, // camera position as the coordinate origin
+            {0,0,-1},
+            image_width, image_height,
+            fov_h,
+            world, samples
+    };
+    ////////////////
+
+    material_diffuse_lambertian m_ground{{0.8, 0.8, 0.0}};
+    material_diffuse_lambertian m_ball_center{{0.7, 0.3, 0.3}};
+    material_dielectric m_ball_left{1.5};
+    material_reflective m_ball_right{{0.8, 0.6, 0.2}};
+    // the earth
+    world.add_object(std::make_shared<sphere>(vec3d{0.0, -100.5, -1.0}, 100.0, m_ground));
+    // three balls
+    world.add_object(std::make_shared<sphere>(vec3d{-1.0, 0.0, -1.0}, 0.5, m_ball_left));
+    world.add_object(std::make_shared<sphere>(vec3d{-1.0, 0.0, -1.0}, -0.45, m_ball_left));
+    world.add_object(std::make_shared<sphere>(vec3d{0.0, 0.0, -1.0}, 0.5, m_ball_center));
+    world.add_object(std::make_shared<sphere>(vec3d{1.0, 0.0, -1.0}, 0.5, m_ball_right));
 #endif
 #ifdef SCENE_DIFFUSE
     material_diffuse_lambertian materi{0.5};
