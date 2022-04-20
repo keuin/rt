@@ -59,6 +59,12 @@ class basic_viewport {
 //    double focus_length; // distance between the focus point and the image screen
     hitlist &world;
     vec3<V> vup{0, 1, 0}; // vector determine the camera rotating
+
+    inline void check_vup() const {
+        // vup must not be parallel with screen_center-cxyz
+        assert(!vup.parallel(screen_center - cxyz));
+    }
+
 public:
 
     basic_viewport(const vec3<V> &cxyz, const vec3<V> &screen_center,
@@ -67,7 +73,9 @@ public:
             cxyz{cxyz}, screen_center{screen_center}, image_width{image_width}, image_height{image_height},
             screen_hw{(cxyz - screen_center).norm() * tan((double) fov_h / 2.0)},
             screen_hh{screen_hw * ((double) image_height / image_width)},
-            world{world} {}
+            world{world} {
+        check_vup();
+    }
 
     basic_viewport(const vec3<V> &cxyz, const vec3<V> &screen_center,
                    uint32_t image_width, uint32_t image_height,
@@ -78,6 +86,7 @@ public:
             screen_hh{screen_hh},
             world{world} {
         assert(std::abs(1.0 * image_width / image_height - 1.0 * screen_hw / screen_hh) < 1e-8);
+        check_vup();
     }
 
     /**
@@ -98,8 +107,9 @@ public:
         // screen plane is determined by coord system x`Vy`, where V is screen_center
         // for variable name we let u := x`, v := y`
         const auto u = cross(r, vup).unit_vec() * screen_hw, v = cross(u, r).unit_vec() * screen_hh;
+        assert(dot(r, u) < 1e-8);
+        assert(dot(r, v) < 1e-8);
         assert(dot(u, v) < 1e-8);
-        assert(dot(u, r) < 1e-8);
         // iterate over every pixel on the image
         for (int j = -img_hh; j < img_hh; ++j) { // axis y, transformation is needed
             for (int i = -img_hw; i < img_hw; ++i) { // axis x
