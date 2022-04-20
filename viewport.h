@@ -111,7 +111,7 @@ public:
         assert(dot(r, v) < 1e-8);
         assert(dot(u, v) < 1e-8);
         // iterate over every pixel on the image
-        for (int j = -img_hh; j < img_hh; ++j) { // axis y, transformation is needed
+        for (int j = -img_hh + 1; j <= img_hh; ++j) { // axis y, transformation is needed
             for (int i = -img_hw; i < img_hw; ++i) { // axis x
                 bias(bx, by); // get a random bias (bx, by) for sub-pixel sampling
                 assert(0 <= bx);
@@ -124,7 +124,7 @@ public:
                 const auto dir = r + off; // direction vector from camera to current pixel on screen
                 ray3d ray{cxyz, dir}; // from camera to pixel (on the viewport)
                 const auto pixel = world.color<U>(ray, ruvg);
-                const auto x_ = i + img_hw, y_ = j + img_hh;
+                const auto x_ = i + img_hw, y_ = -j + img_hh;
                 image.set(x_, y_, pixel);
 
 #ifdef LOG_TRACE
