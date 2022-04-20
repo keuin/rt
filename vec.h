@@ -109,6 +109,15 @@ struct vec3 {
         return std::isfinite(x) && std::isfinite(y) && std::isfinite(z);
     }
 
+    // Determine if this vector is parallel with another one.
+    bool parallel(const vec3 &other) const {
+        const auto dt = dot(other);
+        const auto dot2 = dt * dt;
+        const auto sqlp = mod2() * other.mod2(); // squared length product
+        const auto d = dot2 - sqlp;
+        return d > -1e-6 && d < 1e-6;
+    }
+
     // Get the reflected vector. Current vector is the normal vector (length should be 1), v is the incoming vector.
     vec3 reflect(const vec3 &v) const {
         assert(fabs(mod2() - 1.0) < 1e-8);

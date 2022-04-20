@@ -118,3 +118,15 @@ TEST(Vec, Refract_TIR) {
     vec3d n{1, 0, 0}, u{-1, 0, -sqrt(3)}, v{1, 0, -sqrt(3)};
     ASSERT_EQ(v.unit_vec(), n.refract<true>(u.unit_vec(), 2));
 }
+
+TEST(Vec, VecParallel) {
+    vec3d a{1, 1, 2}, b{1.1, 1.1, 2.2}, c{0,0,0}, d{1, 2, 1};
+    ASSERT_TRUE(a.parallel(b));
+    ASSERT_TRUE(b.parallel(a));
+    ASSERT_TRUE(a.parallel(c));
+    ASSERT_TRUE(c.parallel(a));
+    ASSERT_FALSE(a.parallel(d));
+    ASSERT_FALSE(d.parallel(a));
+    ASSERT_FALSE(b.parallel(d));
+    ASSERT_FALSE(d.parallel(b));
+}
