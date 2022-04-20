@@ -45,8 +45,8 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     // noaa rendering
     bias_ctx no_bias{};
     basic_viewport<T, V> vp_noaa{
-            {-2, 2, 1}, // camera position as the coordinate origin
-            {0, 0, -1},
+            vec3<V>::zero(), // camera position as the coordinate origin
+            vec3d{0, 0, -focal_length},
             image_width, image_height,
             viewport_width / 2.0, ((double) image_height / image_width) * viewport_width / 2.0,
             world
@@ -56,8 +56,8 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     ////////////////
     // aa rendering
     aa_viewport<T, V> vp_aa{
-            {-2, 2, 1}, // camera position as the coordinate origin
-            {0, 0, -1},
+            vec3<V>::zero(), // camera position as the coordinate origin
+            vec3d{0, 0, -focal_length},
             image_width, image_height,
             viewport_width / 2.0, ((double) image_height / image_width) * viewport_width / 2.0,
             world, samples
