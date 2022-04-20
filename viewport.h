@@ -58,6 +58,7 @@ class basic_viewport {
 //    double fov_h; // horizontal FOV, determined if screen_width or screen_height is known
 //    double focus_length; // distance between the focus point and the image screen
     hitlist &world;
+    vec3<V> vup{0, 1, 0}; // vector determine the camera rotating
 public:
 
     basic_viewport(const vec3<V> &cxyz, const vec3<V> &screen_center,
@@ -94,23 +95,26 @@ public:
         V bx, by;
         const auto r = screen_center - cxyz;
         const int img_hw = image_width / 2, img_hh = image_height / 2;
+        // screen plane is determined by coord system x`Vy`, where V is screen_center
+        // for variable name we let u := x`, v := y`
+        const auto u = cross(r, vup).unit_vec() * screen_hw, v = cross(u, r).unit_vec() * screen_hh;
+        assert(dot(u, v) < 1e-8);
+        assert(dot(u, r) < 1e-8);
         // iterate over every pixel on the image
-        for (int j = -img_hh + 1; j <= img_hh; ++j) { // axis y, transformation is needed
+        for (int j = -img_hh; j < img_hh; ++j) { // axis y, transformation is needed
             for (int i = -img_hw; i < img_hw; ++i) { // axis x
                 bias(bx, by); // get a random bias (bx, by) for sub-pixel sampling
                 assert(0 <= bx);
                 assert(0 <= by);
                 assert(bx < 1.0);
                 assert(by < 1.0);
-                const vec3d off{
-                        .x=(1.0 * i + bx) / img_hw * screen_hw,
-                        .y=(1.0 * j + by) / img_hh * screen_hh,
-                        .z=0.0
-                }; // offset on screen plane
+                const auto off_u = (1.0 * i + bx) / img_hw;
+                const auto off_v = (1.0 * j + by) / img_hh;
+                const auto off = off_u * u + off_v * v; // offset on screen plane
                 const auto dir = r + off; // direction vector from camera to current pixel on screen
                 ray3d ray{cxyz, dir}; // from camera to pixel (on the viewport)
                 const auto pixel = world.color<U>(ray, ruvg);
-                const auto x_ = i + img_hw, y_ = -j + img_hh;
+                const auto x_ = i + img_hw, y_ = j + img_hh;
                 image.set(x_, y_, pixel);
 
 #ifdef LOG_TRACE
