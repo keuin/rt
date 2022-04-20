@@ -25,15 +25,21 @@ TEST(Vec, VecMin) {
 }
 
 TEST(Vec, CrossProduct) {
-    vec3i a{1, 1, 1}, b{2, 2, 2}, c{3, 4, 5}, d{6, 7, 8}, e{-3, -6, -3};
+    vec3i a{1, 1, 1}, b{2, 2, 2}, c{3, 4, 5}, d{6, 7, 8}, e{-3, 6, -3};
     ASSERT_EQ(cross(a, b), vec3i{});
     ASSERT_EQ(a.cross(b), vec3i{});
     ASSERT_EQ(cross(c, d), e);
     ASSERT_EQ(c.cross(d), e);
 
-    vec3d f{3, 4, 5}, g{6, 7, 8}, h{-3, -6, -3};
+    vec3d f{3, 4, 5}, g{6, 7, 8}, h{-3, 6, -3};
     ASSERT_EQ(cross(f, g), h);
     ASSERT_EQ(f.cross(g), h);
+
+    vec3d u{2, -2, -2}, v{2.5, -5, -2.5}, w{-5, 0, -5};
+    ASSERT_EQ(cross(u, v), w);
+
+    vec3d x{1.6, 3.5, 11}, y{3, 7, 15}, z{-24.5, 9, 0.7};
+    ASSERT_EQ(cross(x, y), z);
 }
 
 TEST(Vec, DotProduct) {

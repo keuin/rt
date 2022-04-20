@@ -76,7 +76,7 @@ struct vec3 {
 
     // cross product (aka outer product, or vector product, producing a vector)
     vec3 cross(const vec3 &b) const {
-        return vec3{.x=y * b.z - z * b.y, .y=x * b.z - z * b.x, .z=x * b.y - y * b.x};
+        return vec3{.x=y * b.z - z * b.y, .y=z * b.x - x * b.z, .z=x * b.y - y * b.x};
     }
 
     // Multiply with b on every dimension.
