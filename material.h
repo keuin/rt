@@ -20,6 +20,8 @@ public:
     // If this matter scatters, manipulate r and return true. Otherwise return false (the light is absorbed entirely).
     // To make it thread-safe without locking mechanism, private states are passed-in as parameters.
     virtual bool scatter(ray3d &r, const object &hit_obj, double hit_t, random_uv_gen_3d &ruvg) const = 0;
+
+    virtual ~material() = default;
 };
 
 #endif //RT_MATERIAL_H
