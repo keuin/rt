@@ -10,6 +10,9 @@
     + Dielectric (reflective & refractive & total internal reflection)
 - Shapes:
     + Sphere
+- Styling
+    + Positionable camera
+    + Depth of Field
 - Misc:
     + Text printing (font data copied
       from [cse457](https://courses.cs.washington.edu/courses/cse457/98a/tech/OpenGL/font.c))
