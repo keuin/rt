@@ -41,7 +41,7 @@ public:
     virtual ~object() = default;
 
     // Get this object's material.
-    virtual material &get_material() const = 0;
+    virtual const material & get_material() const = 0;
 };
 
 

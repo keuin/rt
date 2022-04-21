@@ -25,12 +25,13 @@ class material;
 class sphere : public object {
     vec3d center;
     double radius;
-    class material &materi;
+    const class material *materi;
 
 public:
     sphere() = delete;
 
-    sphere(const vec3d &center, double radius, class material &materi) : center(center), radius(radius), materi(materi) {}
+    sphere(const vec3d center, double radius, const class material &materi)
+            : center(center), radius(radius), materi(&materi) {}
 
     ~sphere() override = default;
 
@@ -39,8 +40,8 @@ public:
         return (where - center) / radius;
     }
 
-    class material &get_material() const override {
-        return materi;
+    const class material &get_material() const override {
+        return *materi;
     }
 
     bool hit(const ray3d &r, double &t, double t1, double t2) const override {
