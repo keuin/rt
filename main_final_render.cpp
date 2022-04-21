@@ -39,8 +39,8 @@ public:
                 {6.5, 1, 1.5}, //{0, 0, 0},
                 static_cast<uint16_t>(image_width),
                 static_cast<uint16_t>(image_height),
-                24.0 * (M_PI / 180.0),
-                0.1,
+                28.0 * (M_PI / 180.0),
+                0.025,
                 2.432043413435534,
                 world,
                 spp
