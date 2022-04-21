@@ -30,7 +30,15 @@ class hitlist {
 public:
     hitlist() = default;
 
-    hitlist(hitlist &other) = delete; // do not copy the world
+    hitlist(hitlist &other) {
+        objects = other.objects;
+    }
+
+    hitlist(hitlist &&other) noexcept {
+        objects = std::move(other.objects);
+    }
+
+    hitlist &operator=(const hitlist &other) = default;
 
     // Add an object to the world.
     void add_object(std::shared_ptr<object> &&obj) {
