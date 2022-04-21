@@ -21,9 +21,10 @@
 // Select the scene to render
 //#define SCENE_DIFFUSE
 //#define SCENE_REFLECT
-#define SCENE_DIALECT
+//#define SCENE_DIALECT
 //#define SCENE_FOV
 //#define SCENE_FREECAM
+#define SCENE_DOF
 
 #ifdef SCENE_FOV
 #define NO_DEFAULT_CAM
@@ -33,13 +34,19 @@
 #define NO_DEFAULT_CAM
 #endif
 
+#ifdef SCENE_DOF
+#define NO_DEFAULT_CAM
+#endif
+
 static constexpr uint64_t default_diffuse_seed = 123456789012345678ULL;
 
 // T: color depth, V: pos
 template<typename T, typename V>
 void generate_image(uint16_t image_width, uint16_t image_height, double viewport_width, double focal_length,
-                    double sphere_z, double sphere_r, unsigned samples, const std::string &caption = "",
-                    unsigned caption_scale = 1) {
+                    double sphere_z, double sphere_r, unsigned samples,
+                    double aperture, double focus_dist,
+                    const std::string &caption = "", unsigned caption_scale = 1) {
+    std::cerr << "Aperture: " << aperture << std::endl;
     if (samples == 1) {
         std::cerr << "Antialiasing is disabled." << std::endl;
     } else {
@@ -56,8 +63,12 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
     basic_viewport<T, V> vp_noaa{
             vec3<V>::zero(), // camera position as the coordinate origin
             vec3d{0, 0, -focal_length},
-            image_width, image_height,
-            viewport_width / 2.0, ((double) image_height / image_width) * viewport_width / 2.0,
+            image_width,
+            image_height,
+            viewport_width / 2.0,
+            ((double) image_height / image_width) * viewport_width / 2.0,
+            aperture,
+            focus_dist,
             world
     };
     ////////////////
@@ -69,6 +80,7 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
             vec3d{0, 0, -focal_length},
             image_width, image_height,
             viewport_width / 2.0, ((double) image_height / image_width) * viewport_width / 2.0,
+            aperture, focus_dist,
             world, samples
     };
     ////////////////
@@ -84,6 +96,8 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
             {0, 0, 0},
             image_width, image_height,
             fov_h,
+            aperture,
+            focus_dist,
             world
     };
     ////////////////
@@ -95,6 +109,8 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
             {0, 0, 0},
             image_width, image_height,
             fov_h,
+            aperture,
+            focus_dist,
             world, samples
     };
     ////////////////
@@ -113,6 +129,8 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
             {0,0,-1},
             image_width, image_height,
             fov_h,
+            aperture,
+            focus_dist,
             world
     };
     ////////////////
@@ -124,6 +142,51 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
             {0,0,-1},
             image_width, image_height,
             fov_h,
+            aperture,
+            focus_dist,
+            world, samples
+    };
+    ////////////////
+
+    material_diffuse_lambertian m_ground{{0.8, 0.8, 0.0}};
+    material_diffuse_lambertian m_ball_center{{0.7, 0.3, 0.3}};
+    material_dielectric m_ball_left{1.5};
+    material_reflective m_ball_right{{0.8, 0.6, 0.2}};
+    // the earth
+    world.add_object(std::make_shared<sphere>(vec3d{0.0, -100.5, -1.0}, 100.0, m_ground));
+    // three balls
+    world.add_object(std::make_shared<sphere>(vec3d{-1.0, 0.0, -1.0}, 0.5, m_ball_left));
+    world.add_object(std::make_shared<sphere>(vec3d{-1.0, 0.0, -1.0}, -0.45, m_ball_left));
+    world.add_object(std::make_shared<sphere>(vec3d{0.0, 0.0, -1.0}, 0.5, m_ball_center));
+    world.add_object(std::make_shared<sphere>(vec3d{1.0, 0.0, -1.0}, 0.5, m_ball_right));
+#endif
+#ifdef SCENE_DOF
+    focus_dist = 1.7320508075688772;
+    // This scene needs custom viewport setting
+    const auto fov_h = 121.28449291441746 * (M_PI / 180.0);
+    ////////////////
+    // noaa rendering
+    bias_ctx no_bias{};
+    basic_viewport<T, V> vp_noaa{
+            {-2, 2, 1}, // camera position as the coordinate origin
+            {-1, 1, 0},
+            image_width, image_height,
+            fov_h,
+            aperture,
+            focus_dist,
+            world
+    };
+    ////////////////
+
+    ////////////////
+    // aa rendering
+    aa_viewport<T, V> vp_aa{
+            {-2, 2, 1}, // camera position as the coordinate origin
+            {-1, 1, 0},
+            image_width, image_height,
+            fov_h,
+            aperture,
+            focus_dist,
             world, samples
     };
     ////////////////
@@ -173,8 +236,9 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
 #endif
     timer tm;
     std::cerr << "Rendering..." << std::endl;
+    bokeh_ctx bokeh{12345678ULL};
     tm.start_measure();
-    auto image = ((samples == 1) ? vp_noaa.render(default_diffuse_seed, no_bias) : vp_aa.render());
+    auto image = ((samples == 1) ? vp_noaa.render(default_diffuse_seed, no_bias, bokeh) : vp_aa.render());
     tm.stop_measure();
     std::cerr << "Applying gamma2..." << std::endl;
     tm.start_measure();
@@ -194,8 +258,8 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
 }
 
 int main(int argc, char **argv) {
-    if (argc != 8 && argc != 9) {
-        printf("Usage: %s <image_width> <image_height> <viewport_width> <focal_length> <sphere_z> <sphere_r> <samples> [<caption>]\n",
+    if (argc != 10 && argc != 11) {
+        printf("Usage: %s <image_width> <image_height> <viewport_width> <focal_length> <sphere_z> <sphere_r> <aperture> <focus_dist> <samples> [<caption>]\n",
                argv[0]);
         return 0;
     }
@@ -205,15 +269,16 @@ int main(int argc, char **argv) {
     std::cerr << "Notice: assertion is disabled." << std::endl;
 #endif
     std::string iw{argv[1]}, ih{argv[2]}, vw{argv[3]}, fl{argv[4]},
-            sz{argv[5]}, sr{argv[6]}, sp{argv[7]}, cap{};
-    if (argc == 9) {
+            sz{argv[5]}, sr{argv[6]}, aper{argv[7]}, fd{argv[8]}, sp{argv[9]}, cap{};
+    if (argc == 11) {
         // with caption
-        cap = std::string{argv[8]};
+        cap = std::string{argv[10]};
     }
     const auto image_width = std::stoul(iw);
     generate_image<uint16_t, double>(image_width, std::stoul(ih),
                                      std::stod(vw), std::stod(fl),
                                      std::stod(sz), std::stod(sr),
-                                     std::stoul(sp), cap,
-                                     std::max((int) (1.0 * image_width * 0.010 / 8), 1));
+                                     std::stoul(sp), std::stod(aper),
+                                     std::stod(fd),
+                                     cap, std::max((int) (1.0 * image_width * 0.010 / 8), 1));
 }

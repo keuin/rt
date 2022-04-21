@@ -26,6 +26,8 @@ class aa_viewport {
     hitlist &world;
     unsigned samples;
     int threads;
+    double aperture;
+    double focus_dist;
 
 public:
 
@@ -35,6 +37,8 @@ public:
                 uint16_t image_height,
                 V screen_hw,
                 V screen_hh,
+                double aperture,
+                double focus_dist,
                 hitlist &world,
                 unsigned samples,
                 int threads = -1) :
@@ -46,7 +50,9 @@ public:
             screen_hh(screen_hh),
             world(world),
             samples(samples),
-            threads((threads > 0) ? threads : (int) std::thread::hardware_concurrency()) {
+            threads((threads > 0) ? threads : (int) std::thread::hardware_concurrency()),
+            aperture{aperture},
+            focus_dist{focus_dist} {
         assert(samples >= 1);
         assert(std::abs(1.0 * image_width / image_height - 1.0 * screen_hw / screen_hh) < 1e-8);
     }
@@ -56,6 +62,8 @@ public:
                 uint16_t image_width,
                 uint16_t image_height,
                 double fov_h,
+                double aperture,
+                double focus_dist,
                 hitlist &world,
                 unsigned samples,
                 int threads = -1) :
@@ -67,7 +75,9 @@ public:
             screen_hh{screen_hw * ((double) image_height / image_width)},
             world(world),
             samples(samples),
-            threads((threads > 0) ? threads : (int) std::thread::hardware_concurrency()) {
+            threads((threads > 0) ? threads : (int) std::thread::hardware_concurrency()),
+            aperture{aperture},
+            focus_dist{focus_dist} {
         assert(samples >= 1);
     }
 
@@ -94,10 +104,11 @@ public:
                         ctx.cxyz, ctx.screen_center,
                         ctx.image_width, ctx.image_height,
                         ctx.screen_hw, ctx.screen_hh,
-                        ctx.world
+                        ctx.aperture, ctx.focus_dist, ctx.world
                 };
                 bias_ctx bc{task.bias_seed};
-                images[tid] = vp.render(task.diffuse_seed, bc);
+                bokeh_ctx bokeh{task.diffuse_seed + 6543210987ULL};
+                images[tid] = vp.render(task.diffuse_seed, bc, bokeh);
             }, s_render_task{
                     .bias_seed=seedgen(), .diffuse_seed=seedgen()
             });

@@ -42,6 +42,33 @@ public:
     }
 };
 
+// Generate a circle of confusion of circle shape. (can be extended to any shape in the future)
+class bokeh_ctx {
+    bool enabled;
+    std::mt19937_64 mt;
+    std::uniform_real_distribution<double> uni{-1.0, 1.0};
+
+public:
+    bokeh_ctx() : enabled{false} {}
+
+    bokeh_ctx(uint64_t seed) : enabled{true}, mt{seed} {}
+
+    void operator()(double &x, double &y) {
+        if (!enabled) {
+            x = 0;
+            y = 0;
+            return;
+        }
+        double x_, y_;
+        do {
+            x_ = uni(mt);
+            y_ = uni(mt);
+        } while (x_ * x_ + y_ * y_ >= 1);
+        x = x_;
+        y = y_;
+    }
+};
+
 // TODO rename to camera
 // Single sampled viewport which supports bias sampling
 // U: color depth, V: pos
@@ -59,6 +86,8 @@ class basic_viewport {
 //    double focus_length; // distance between the focus point and the image screen
     hitlist &world;
     vec3<V> vup{0, 1, 0}; // vector determine the camera rotating
+    double aperture; // radius ratio of the aperture
+    double focus_dist;
 
     inline void check_vup() const {
         // vup must not be parallel with screen_center-cxyz
@@ -69,22 +98,25 @@ public:
 
     basic_viewport(const vec3<V> &cxyz, const vec3<V> &screen_center,
                    uint32_t image_width, uint32_t image_height,
-                   double fov_h, hitlist &world) :
+                   double fov_h, double aperture, double focus_dist, hitlist &world) :
             cxyz{cxyz}, screen_center{screen_center}, image_width{image_width}, image_height{image_height},
             screen_hw{(cxyz - screen_center).norm() * tan((double) fov_h / 2.0)},
             screen_hh{screen_hw * ((double) image_height / image_width)},
-            world{world} {
+            world{world},
+            aperture{aperture}, focus_dist{focus_dist} {
         check_vup();
     }
 
     basic_viewport(const vec3<V> &cxyz, const vec3<V> &screen_center,
                    uint32_t image_width, uint32_t image_height,
                    double screen_hw, double screen_hh,
+                   double aperture, double focus_dist,
                    hitlist &world) :
             cxyz{cxyz}, screen_center{screen_center}, image_width{image_width}, image_height{image_height},
             screen_hw{screen_hw},
             screen_hh{screen_hh},
-            world{world} {
+            world{world},
+            aperture{aperture}, focus_dist{focus_dist} {
         assert(std::abs(1.0 * image_width / image_height - 1.0 * screen_hw / screen_hh) < 1e-8);
         check_vup();
     }
@@ -95,7 +127,7 @@ public:
      * @param by bias on y axis (0.0 <= by < 1.0)
      * @return
      */
-    bitmap<U> render(uint64_t diffuse_seed, bias_ctx &bias
+    bitmap<U> render(uint64_t diffuse_seed, bias_ctx &bias, bokeh_ctx &bokeh
             /* by putting thread-specific parameters in call argument list, make users convenient*/) const {
         // The implementation keep all mutable state in local stack,
         // keeping the class immutable and thread-safe.
@@ -106,10 +138,12 @@ public:
         const int img_hw = image_width / 2, img_hh = image_height / 2;
         // screen plane is determined by coord system x`Vy`, where V is screen_center
         // for variable name we let u := x`, v := y`
-        const auto u = cross(r, vup).unit_vec() * screen_hw, v = cross(u, r).unit_vec() * screen_hh;
+        const auto u0 = cross(r, vup).unit_vec(), v0 = cross(u0, r).unit_vec();
+        const auto u = u0 * screen_hw, v = v0 * screen_hh;
         assert(dot(r, u) < 1e-8);
         assert(dot(r, v) < 1e-8);
         assert(dot(u, v) < 1e-8);
+        const V pof_scale = (V) 1.0 + (V) focus_dist / r.norm();
         // iterate over every pixel on the image
         for (int j = -img_hh + 1; j <= img_hh; ++j) { // axis y, transformation is needed
             for (int i = -img_hw; i < img_hw; ++i) { // axis x
@@ -122,7 +156,12 @@ public:
                 const auto off_v = (1.0 * j + by) / img_hh;
                 const auto off = off_u * u + off_v * v; // offset on screen plane
                 const auto dir = r + off; // direction vector from camera to current pixel on screen
-                ray3d ray{cxyz, dir}; // from camera to pixel (on the viewport)
+                const auto dir_pof = dir * pof_scale; // difference from camera to point on focus plane
+                const auto pof = cxyz + dir_pof; // point on focus plane, the destination
+                double bokeh_u, bokeh_v;
+                bokeh(bokeh_u, bokeh_v);
+                const auto source = cxyz + (aperture * bokeh_u) * u0 + (aperture * bokeh_v) * v0;
+                ray3d ray{source, pof - source}; // from camera to pixel (on the viewport)
                 const auto pixel = world.color<U>(ray, ruvg);
                 const auto x_ = i + img_hw, y_ = -j + img_hh;
                 image.set(x_, y_, pixel);
