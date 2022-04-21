@@ -131,8 +131,8 @@ struct vec3 {
     // If TIR happens, the ray will be reflected.
     template<bool Enable_TIR>
     vec3 refract(const vec3 &r1, double ri_inv) const {
-        assert(fabs(mod2() - 1.0) < 1e-12);
-        assert(fabs(r1.mod2() - 1.0) < 1e-12);
+        assert(fabs(mod2() - 1.0) < 1e-7);
+        assert(fabs(r1.mod2() - 1.0) < 1e-7);
         assert(ri_inv > 0);
         assert(dot(r1) < 0); // normal vector must be on the same side
         const auto &n = *this; // normal vector
