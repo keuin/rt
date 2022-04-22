@@ -106,19 +106,6 @@ TEST(Vec, Reflect) {
     ASSERT_EQ(v, n.reflect(u));
 }
 
-TEST(Vec, Refract) {
-    vec3d n{1, 0, 0}, u{-1, 0, -1}, v{-sqrt(14), 0, -sqrt(2)};
-    ASSERT_EQ(u.unit_vec(), n.refract<true>(u.unit_vec(), 1).unit_vec());
-    ASSERT_EQ(u.unit_vec(), n.refract<false>(u.unit_vec(), 1).unit_vec());
-    ASSERT_EQ(v.unit_vec(), n.refract<true>(u.unit_vec(), 0.5).unit_vec());
-    ASSERT_EQ(v.unit_vec(), n.refract<false>(u.unit_vec(), 0.5).unit_vec());
-}
-
-TEST(Vec, Refract_TIR) {
-    vec3d n{1, 0, 0}, u{-1, 0, -sqrt(3)}, v{1, 0, -sqrt(3)};
-    ASSERT_EQ(v.unit_vec(), n.refract<true>(u.unit_vec(), 2));
-}
-
 TEST(Vec, VecParallel) {
     vec3d a{1, 1, 2}, b{1.1, 1.1, 2.2}, c{0,0,0}, d{1, 2, 1};
     ASSERT_TRUE(a.parallel(b));

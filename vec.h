@@ -10,7 +10,6 @@
 #include <ostream>
 #include <cassert>
 #include <algorithm>
-#include "tracelog.h"
 
 static inline bool eq(int a, int b) {
     return a == b;
@@ -122,38 +121,6 @@ struct vec3 {
     vec3 reflect(const vec3 &v) const {
         assert(fabs(mod2() - 1.0) < 1e-8);
         return v - (2.0 * dot(v)) * (*this);
-    }
-
-    // Get the refracted vector. Current vector is the normal vector (length should be 1),
-    // r1 is the incoming vector, ri_inv is the relative refraction index n2/n1,
-    // where n2 is the destination media's refraction index, and n1 is the source media's refraction index.
-    // TIR (Total Internal Reflection) is optionally enabled by macro TIR_OR and TIR_OFF.
-    // If TIR happens, the ray will be reflected.
-    template<bool Enable_TIR>
-    vec3 refract(const vec3 &r1, double ri_inv) const {
-        assert(fabs(mod2() - 1.0) < 1e-7);
-        assert(fabs(r1.mod2() - 1.0) < 1e-7);
-        assert(ri_inv > 0);
-        assert(dot(r1) < 0); // normal vector must be on the same side
-        const auto &n = *this; // normal vector
-        const auto m_cos1 = std::max(dot(r1), (T) (-1)); // cos(a1), a1 is the incoming angle
-//        assert(m_cos1 <= 0); // incoming angle must smaller than 90deg
-        const auto c = ri_inv; // c = nx * r`x + ny * r`y
-        auto d = 1 - c * c * (1 - m_cos1 * m_cos1);
-        if (d < 0) {
-            // TODO test TIR
-            if (Enable_TIR) {
-                // ri_inv < sin(a1), cannot refract, must reflect (Total Internal Reflection)
-                TRACELOG("    reflect (TIR, d=%f)\n", d);
-                return reflect(r1);
-            } else {
-                TRACELOG("    refract (forced, d=%f)\n", d);
-                d = -d; // abs, just make the sqrt has a real solution
-            }
-        }
-        const auto n2 = (r1 - dot(r1) * n) * c - sqrt(d) * n;
-        assert(n2.valid());
-        return n2;
     }
 };
 
