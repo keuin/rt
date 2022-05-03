@@ -9,7 +9,7 @@
 #include "material.h"
 
 class material_dielectric : public material {
-    double ri_inv;
+    double ri; // refractive index, 1.0 for air and 1.5 for glasses
 
     static double reflectance(double cosine, double ref_idx) {
         assert(cosine > 0);
@@ -21,7 +21,7 @@ class material_dielectric : public material {
     }
 
 public:
-    explicit material_dielectric(double ri) : ri_inv{1.0 / ri} {}
+    explicit material_dielectric(double ri) : ri{ri} {}
 
     bool scatter(ray3d &r, const object &hit_obj, double hit_t, random_uv_gen_3d &ruvg) const override;
 };
