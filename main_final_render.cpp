@@ -55,6 +55,10 @@ final_scene<T_Color, T_Coord>::final_scene(uint64_t seed) : world{} {
     std::uniform_real_distribution<double> uni{0, 1};
     material *m_ball;
 
+    // shared materials
+    const auto m_glass = new material_dielectric{1.5};
+    materials.push_back(m_glass);
+
     // earth
     m_ball = new material_diffuse_lambertian{{0.5, 0.5, 0.5}};
     world.add_object(std::make_shared<sphere>(vec3d{0, -1000, 0}, 1000.0, *m_ball));
@@ -77,6 +81,7 @@ final_scene<T_Color, T_Coord>::final_scene(uint64_t seed) : world{} {
                     };
                     m_ball = new material_diffuse_lambertian{albedo};
                     world.add_object(std::make_shared<sphere>(center, 0.2, *m_ball));
+                    materials.push_back(m_ball);
                 } else if (rv < 0.95) {
                     // metal
                     auto albedo = vec3d{
@@ -87,12 +92,11 @@ final_scene<T_Color, T_Coord>::final_scene(uint64_t seed) : world{} {
                     auto fuzz = 0.5 * uni(rand);
                     m_ball = new material_fuzzy_reflective{albedo, fuzz};
                     world.add_object(std::make_shared<sphere>(center, 0.2, *m_ball));
+                    materials.push_back(m_ball);
                 } else {
                     // glass
-                    m_ball = new material_dielectric{1.5};
-                    world.add_object(std::make_shared<sphere>(center, 0.2, *m_ball));
+                    world.add_object(std::make_shared<sphere>(center, 0.2, *m_glass));
                 }
-                materials.push_back(m_ball);
             }
         }
     }
