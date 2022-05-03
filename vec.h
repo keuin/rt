@@ -215,7 +215,7 @@ public:
 
     // Get a random real number in range [0, 1].
     inline T range01_scalar() {
-        return uni(mt);
+        return std::abs(uni(mt));
     };
 
     // Get a unit vector with random direction.
