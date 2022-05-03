@@ -134,6 +134,10 @@ int main(int argc, char *argv[]) {
         printf("%s <image_width> <image_height> <sample_per_pixel>\n", argv[0]);
         return 0;
     }
+    const bool no_print = std::getenv("NOPRINT") != nullptr;
+    if (no_print) {
+        std::cerr << "NOPRINT is set. Result image won't be printed to STDOUT." << std::endl;
+    }
     std::string s_image_width{argv[1]}, s_image_height{argv[2]}, s_spp{argv[3]};
     uint32_t image_width = std::stoul(s_image_width);
     uint32_t image_height = std::stoul(s_image_height);
@@ -151,5 +155,5 @@ int main(int argc, char *argv[]) {
     tm.start_measure();
     const auto image2 = image.gamma2();
     tm.stop_measure();
-    image2.write_plain_ppm(std::cout);
+    if (!no_print) image2.write_plain_ppm(std::cout);
 }
