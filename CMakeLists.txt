@@ -11,6 +11,11 @@ set(CMAKE_CXX_FLAGS_RELEASE "${common_compiler_args} -O2")
 
 set(CMAKE_VERBOSE_MAKEFILE on)
 
+# Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake 3.24:
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+    cmake_policy(SET CMP0135 NEW)
+endif()
+
 link_libraries(pthread)
 link_libraries(atomic)
 
