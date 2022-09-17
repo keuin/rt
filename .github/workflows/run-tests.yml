@@ -1,0 +1,21 @@
+name: run-tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install gtest
+        uses: MarkusJx/googletest-installer@v1.1
+      - uses: actions/checkout@v3
+      - name: Run CMake configure
+        run: mkdir build && cd build && cmake ..
+      - name: Compile
+        run: cd build && make -j
+      - name: Run tests
+        run: ${GITHUB_WORKSPACE}/build/all_tests
