@@ -93,13 +93,13 @@ public:
             uint64_t diffuse_seed;
         };
 
-        thread_pool<s_render_task, typeof(*this), typeof(images)> pool{thread_count, *this, images, samples};
+        thread_pool<s_render_task, decltype(*this), decltype(images)> pool{thread_count, *this, images, samples};
         timer tim{true};
 
         std::cerr << "Seeding tasks..." << std::endl;
         tim.start_measure();
-        for (typeof(samples) i = 0; i < samples; ++i) {
-            pool.submit_task([](size_t tid, s_render_task &task, const aa_viewport<U, V> &ctx, typeof(images) &images) {
+        for (decltype(samples) i = 0; i < samples; ++i) {
+            pool.submit_task([](size_t tid, s_render_task &task, const aa_viewport<U, V> &ctx, decltype(images) &images) {
                 basic_viewport<U, V> vp{
                         ctx.cxyz, ctx.screen_center,
                         ctx.image_width, ctx.image_height,
@@ -110,7 +110,7 @@ public:
                 bokeh_ctx bokeh{task.diffuse_seed + 6543210987ULL};
                 images[tid] = vp.render(task.diffuse_seed, bc, bokeh);
             }, s_render_task{
-                    .bias_seed=seedgen(), .diffuse_seed=seedgen()
+                    seedgen(), seedgen()
             });
         }
         tim.stop_measure();

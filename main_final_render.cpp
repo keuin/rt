@@ -2,6 +2,9 @@
 // Created by Keuin on 2022/4/21.
 //
 
+// include M_PI from cmath when using MSVC
+#define _USE_MATH_DEFINES
+
 #include "viewport.h"
 #include "hitlist.h"
 #include "aa.h"

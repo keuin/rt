@@ -12,6 +12,7 @@
 #include <mutex>
 #include <atomic>
 #include <iostream>
+#include <functional>
 
 // A simple once-usage thread pool and task queue.
 // Using lock-free atomic counter to avoid expensive queue or synchronization mechanism.
@@ -19,7 +20,7 @@
 // Once the task queue is empty, threads quit.
 
 template<typename T_Args, typename T_ImmuCtx, typename T_MutCtx>
-using task_func_t = void (*)(size_t, T_Args &, const T_ImmuCtx &, T_MutCtx &);
+using task_func_t = std::function<void(size_t, T_Args&, const T_ImmuCtx&, T_MutCtx&)>;
 
 // internal usage
 template<typename T, typename U, typename V>
@@ -61,7 +62,7 @@ public:
 template<typename T, typename U, typename V>
 void thread_pool<T, U, V>::start() {
     if (workers.empty()) {
-        for (typeof(thread_count) i = 0; i < thread_count; ++i) {
+        for (decltype(thread_count) i = 0; i < thread_count; ++i) {
             workers.emplace_back(std::thread{&thread_pool<T, U, V>::worker_main, this});
         }
     } else {
@@ -83,7 +84,7 @@ void thread_pool<T, U, V>::worker_main() {
 // Do not submit after starting.
 template<typename T, typename U, typename V>
 void thread_pool<T, U, V>::submit_task(task_func_t<T, U, V> f, T &&t) {
-    tasks.push_back(s_task<T, U, V>{.f=f, .arg=std::move(t)});
+    tasks.push_back(s_task<T, U, V>{f, std::move(t)});
 }
 
 template<typename T, typename U, typename V>

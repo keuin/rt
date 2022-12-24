@@ -2,11 +2,16 @@
 // Created by Keuin on 2022/4/11.
 //
 
+// include M_PI from cmath when using MSVC
+#define _USE_MATH_DEFINES
+
 #include <cstdint>
 #include <iostream>
 #include <vector>
 #include <memory>
 #include <cstdlib>
+#include <string>
+#include <cmath>
 
 #include "vec.h"
 #include "timer.h"

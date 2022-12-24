@@ -1,4 +1,8 @@
 cmake-build*
+build
 
 .code
 .idea
+.vs
+
+CMakeSettings.json

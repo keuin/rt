@@ -47,7 +47,7 @@ struct pixel {
      * For example: Set color depth to 8bit, for normalized color (1, 0.5, 0.25), we get: (255, 127, 63).
      */
     static inline pixel<T> from_normalized(double r, double g, double b) {
-        return pixel<T>{.r = (T) (mod * r), .g = (T) (mod * g), .b = (T) (mod * b)};
+        return pixel<T>{(T) (mod * r), (T) (mod * g), (T) (mod * b)};
     }
 
     // v3d must be a normalized vector
@@ -120,12 +120,12 @@ template<
         typename = typename std::enable_if<std::is_arithmetic<S>::value, S>::type
 >
 pixel<T> operator*(S scale, const pixel <T> &pixel) {
-    return ::pixel < T > {.r=(T) (pixel.r * scale), .g=(T) (pixel.g * scale), .b=(T) (pixel.b * scale)};
+    return ::pixel < T > {(T) (pixel.r * scale), (T) (pixel.g * scale), (T) (pixel.b * scale)};
 }
 
 template<typename S, typename T>
 pixel<T> operator*(const vec3<S> &scale, const pixel <T> &pixel) {
-    return ::pixel < T > {.r=(T) (pixel.r * scale.x), .g=(T) (pixel.g * scale.y), .b=(T) (pixel.b * scale.z)};
+    return ::pixel < T > {(T) (pixel.r * scale.x), (T) (pixel.g * scale.y), (T) (pixel.b * scale.z)};
 }
 
 // Mix two colors a and b. Returns a*u + b*v

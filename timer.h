@@ -10,8 +10,8 @@
 
 class timer {
 private:
-    typeof(std::chrono::system_clock::now()) start_time;
-    typeof(std::chrono::system_clock::now()) end_time;
+    decltype(std::chrono::system_clock::now()) start_time;
+    decltype(std::chrono::system_clock::now()) end_time;
     bool silent;
 public:
     timer() : silent{false} {}

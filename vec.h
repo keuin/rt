@@ -53,11 +53,11 @@ struct vec3 {
     }
 
     vec3 operator+(const vec3 &b) const {
-        return vec3{.x=x + b.x, .y=y + b.y, .z=z + b.z};
+        return vec3{x + b.x, y + b.y, z + b.z};
     }
 
     vec3 operator-() const {
-        return vec3{.x = -x, .y = -y, .z = -z};
+        return vec3{-x, -y, -z};
     }
 
     vec3 operator-(const vec3 &b) const {
@@ -75,12 +75,12 @@ struct vec3 {
 
     // cross product (aka outer product, or vector product, producing a vector)
     vec3 cross(const vec3 &b) const {
-        return vec3{.x=y * b.z - z * b.y, .y=z * b.x - x * b.z, .z=x * b.y - y * b.x};
+        return vec3{y * b.z - z * b.y, z * b.x - x * b.z, x * b.y - y * b.x};
     }
 
     // Multiply with b on every dimension.
     vec3 scale(const vec3 &b) const {
-        return vec3{.x=x * b.x, .y=y * b.y, .z=z * b.z};
+        return vec3{x * b.x, y * b.y, z * b.z};
     }
 
     // norm value
@@ -140,7 +140,7 @@ inline vec3<T> operator*(const vec3<T> &vec, const S &b) {
     if (std::is_floating_point<S>::value) {
         assert(std::isfinite(b));;
     }
-    return vec3<T>{.x=(T) (vec.x * b), .y=(T) (vec.y * b), .z=(T) (vec.z * b)};
+    return vec3<T>{(T) (vec.x * b), (T) (vec.y * b), (T) (vec.z * b)};
 }
 
 // product vec3 by a scalar, with fp assertions
@@ -152,7 +152,7 @@ inline vec3<T> operator*(const S &b, const vec3<T> &vec) {
     if (std::is_floating_point<S>::value) {
         assert(std::isfinite(b));
     }
-    return vec3<T>{.x=(T) (vec.x * b), .y=(T) (vec.y * b), .z=(T) (vec.z * b)};
+    return vec3<T>{(T) (vec.x * b), (T) (vec.y * b), (T) (vec.z * b)};
 }
 
 // product vec3 by the inversion of a scalar (div by a scalar), with fp assertions
@@ -166,7 +166,7 @@ inline vec3<T> operator/(const vec3<T> &vec, const S &b) {
         assert(std::isfinite(b));
         assert(b != 0);
     }
-    return vec3<T>{.x=(T) (vec.x / b), .y=(T) (vec.y / b), .z=(T) (vec.z / b)};
+    return vec3<T>{(T) (vec.x / b), (T) (vec.y / b), (T) (vec.z / b)};
 }
 
 // scalar product (inner product)
@@ -208,7 +208,7 @@ public:
     inline vec3<T> range01() {
         while (true) {
             const auto x = uni(mt), y = uni(mt), z = uni(mt);
-            const auto vec = vec3<T>{.x=x, .y=y, .z=z};
+            const auto vec = vec3<T>{x, y, z};
             if (vec.mod2() <= 1.0) return vec.unit_vec();
         }
     }

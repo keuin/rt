@@ -21,8 +21,8 @@
 
 ## Tested platforms
 
-- Linux
-- Win32 (Windows 10)
+- Linux (GCC/Clang)
+- Win32 (Windows 10/11, GCC(MinGW)/Clang(MinGW)/MSVC14)
 
 ## Ray-Trace logging
 
