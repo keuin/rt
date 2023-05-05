@@ -14,7 +14,7 @@ set(common_compiler_args, "${common_compiler_args} -Wno-unused -std=c++11")
 if (NOT MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "${common_compiler_args} -g -ggdb -fsanitize=address -DDEBUG")
 endif ()
-set(CMAKE_CXX_FLAGS_RELEASE "${common_compiler_args} -O2")
+set(CMAKE_CXX_FLAGS_RELEASE "${common_compiler_args} -O3 -march=native")
 
 set(CMAKE_VERBOSE_MAKEFILE on)
 
