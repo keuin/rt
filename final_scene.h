@@ -5,6 +5,19 @@
 #ifndef RT_FINAL_SCENE_H
 #define RT_FINAL_SCENE_H
 
+#include "material_diffusive.h"
+#include "material_reflective.h"
+#include "material_dielectric.h"
+
+#include "hitlist.h"
+#include "sphere.h"
+#include "viewport.h"
+#include "aa.h"
+#include "bitmap.h"
+
+#include <random>
+#include <memory>
+#include <vector>
 
 template<typename T_Color, typename T_Coord>
 class final_scene {

@@ -61,7 +61,7 @@ void generate_image(uint16_t image_width, uint16_t image_height, double viewport
         std::cerr << "Antialiasing Samples: " << samples << std::endl;
     }
     std::cerr << "Initializing context..." << std::endl;
-    double r = 1.0 * image_width / image_height;
+    // double r = 1.0 * image_width / image_height;
     hitlist world;
 
 #ifndef NO_DEFAULT_CAM
@@ -288,5 +288,5 @@ int main(int argc, char **argv) {
                                      std::stod(sz), std::stod(sr),
                                      std::stoul(sp), std::stod(aper),
                                      std::stod(fd),
-                                     cap, std::max((int) (1.0 * image_width * 0.010 / 8), 1));
+                                     cap, std::max((int) (1.0 * static_cast<double>(image_width) * 0.010 / 8), 1));
 }

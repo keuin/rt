@@ -5,18 +5,14 @@
 #ifndef RT_HITLIST_H
 #define RT_HITLIST_H
 
-#include "viewport.h"
-#include "timer.h"
 #include "bitmap.h"
 #include "ray.h"
 #include "vec.h"
 #include "object.h"
 #include "tracelog.h"
-#include <cstdlib>
 #include <memory>
 #include <limits>
 #include <vector>
-#include <iostream>
 #include <cstdint>
 
 //#define T_SIMPLE_COLOR

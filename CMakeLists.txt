@@ -51,3 +51,9 @@ FetchContent_MakeAvailable(googletest)
 include(GoogleTest)
 
 gtest_discover_tests(all_tests)
+
+# python binding
+
+add_subdirectory(pybind11)
+pybind11_add_module(pyrt pyrt.cpp vec.h bitmap.h ray.h timer.h bitfont.h hitlist.h object.h sphere.h viewport.h aa.h material.h material_diffusive.h material_diffusive.cpp material_reflective.h material_reflective.cpp material_dielectric.cpp material_dielectric.h tracelog.h threading.h)
+target_compile_definitions(pyrt PRIVATE VERSION_INFO=${RT_VERSION_INFO})

@@ -9,22 +9,10 @@
 #endif
 
 #include "viewport.h"
-#include "hitlist.h"
 #include "aa.h"
 #include "bitmap.h"
-
-#include "material_diffusive.h"
-#include "material_reflective.h"
-#include "material_dielectric.h"
-
-#include "sphere.h"
 #include "final_scene.h"
-
 #include "timer.h"
-
-#include <random>
-#include <memory>
-#include <vector>
 #include <string>
 
 int main(int argc, char *argv[]) {
