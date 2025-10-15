@@ -3,7 +3,10 @@
 //
 
 // include M_PI from cmath when using MSVC
+
+#ifdef _MSC_VER
 #define _USE_MATH_DEFINES
+#endif
 
 #include <cstdint>
 #include <iostream>
