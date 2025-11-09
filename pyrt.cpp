@@ -37,6 +37,47 @@ PYBIND11_MODULE(pyrt, m, py::mod_gil_not_used()) {
   py::class_<bitmap<u_int16_t>>(m, "BitMapU16")
     .def(py::init<unsigned, unsigned>());
 
+  // objects
+  py::class_<object>(m, "RtObject")
+    .def("hit",
+      static_cast<bool(object::*)(const ray3d &r, double &t, double t1, double t2) const>(&object::hit))
+    .def("hit_inf",
+      static_cast<bool(object::*)(const ray3d &r, double &t, double t1) const>(&object::hit))
+    .def("is_on", &object::is_on)
+    .def("normal_vector", &object::normal_vector)
+    .def("color", &object::color)
+    .def("get_material", &object::get_material);
+
+  py::class_<sphere, object>(m, "Sphere")
+    .def(py::init<vec3d, double, material&>());
+
+  // material objects
+  py::class_<material>(m, "Material")
+    .def("scatter", &material::scatter);
+
+  py::class_<material_dielectric, material>(m, "MaterialDielectric")
+    .def(py::init<double>());
+
+  py::class_<material_diffuse_hemispherical, material>(m, "MaterialDiffuseHemispherical")
+    .def(py::init<double>())
+    .def(py::init<vec3d>());
+
+  py::class_<material_diffuse_lambertian, material>(m, "MaterialDiffuseLambertian")
+    .def(py::init<double>())
+    .def(py::init<vec3d>());
+
+  py::class_<material_diffuse_simple, material>(m, "MaterialDiffuseSimple")
+    .def(py::init<double>())
+    .def(py::init<vec3d>());
+
+  py::class_<material_reflective, material>(m, "MaterialReflective")
+    .def(py::init<double>())
+    .def(py::init<vec3d>());
+
+  py::class_<material_fuzzy_reflective, material>(m, "MaterialFuzzyReflective")
+    .def(py::init<vec3d, double>())
+    .def(py::init<double, double>());
+
 #ifdef VERSION_INFO
   m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
