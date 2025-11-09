@@ -37,8 +37,24 @@ PYBIND11_MODULE(pyrt, m, py::mod_gil_not_used()) {
   py::class_<bitmap<u_int16_t>>(m, "BitMapU16")
     .def(py::init<unsigned, unsigned>());
 
+  py::class_<hitlist>(m, "Hitlist")
+    .def(py::init<>())
+    .def("add_object", &hitlist::add_object);
+
+  py::class_<aa_viewport<u_int16_t, double>>(m, "AAViewportU16")
+    .def(
+      py::init<
+      vec3d, vec3d,
+      uint16_t, uint16_t,
+      double, double,
+      double, double,
+      hitlist,
+      unsigned,
+      int>(),
+      py::arg("threads") = -1);
+
   // objects
-  py::class_<object>(m, "RtObject")
+  py::class_<object, std::shared_ptr<object>>(m, "RtObject")
     .def("hit",
       static_cast<bool(object::*)(const ray3d &r, double &t, double t1, double t2) const>(&object::hit))
     .def("hit_inf",
