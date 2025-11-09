@@ -34,6 +34,9 @@ PYBIND11_MODULE(pyrt, m, py::mod_gil_not_used()) {
     .def(py::init<uint64_t>())
     .def("render", &final_scene<u_int16_t, double>::render);
 
+  py::class_<bitmap<u_int16_t>>(m, "BitMapU16")
+    .def(py::init<unsigned, unsigned>());
+
 #ifdef VERSION_INFO
   m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
